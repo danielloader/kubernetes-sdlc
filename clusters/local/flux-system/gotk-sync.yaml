@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: ssh://git@gitlab.com/nominet/cyber/architecture-team/fluxcd-testbed
+  url: ssh://git@gitlab.com/nominet/cyber/architecture-team/fluxcd-testbed.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
@@ -20,7 +20,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./clusters/local/
+  path: ./clusters/local
   prune: true
   sourceRef:
     kind: GitRepository
