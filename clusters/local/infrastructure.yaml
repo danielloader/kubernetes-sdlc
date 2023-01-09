@@ -33,22 +33,22 @@ spec:
   prune: true
   patches:
     - patch: |-
-      apiVersion: aws.crossplane.io/v1beta1
-      kind: ProviderConfig
-      metadata:
-        name: aws
-      spec:
-        endpoint:
-          hostnameImmutable: true
-          url:
-            type: Static
-            static: "http://localstack-localstack.localstack:4566"
-        credentials:
-          source: Secret
-          secretRef:
-            namespace: controllers-system
-            name: aws-creds
-            key: creds
+        apiVersion: aws.crossplane.io/v1beta1
+        kind: ProviderConfig
+        metadata:
+          name: aws
+        spec:
+          endpoint:
+            hostnameImmutable: true
+            url:
+              type: Static
+              static: "http://localstack-localstack.localstack:4566"
+          credentials:
+            source: Secret
+            secretRef:
+              namespace: controllers-system
+              name: aws-creds
+              key: creds
       target:
         kind: ProviderConfig
-        labelSelector: "config.nominet.uk/crossplane=aws"
+        labelSelector: "config.nominet.uk/crossplane=aws"  
