@@ -22,7 +22,7 @@ spec:
   targetNamespace: monitoring
   chart:
     spec:
-      chart: keda
+      chart: kube-prometheus-stack
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
