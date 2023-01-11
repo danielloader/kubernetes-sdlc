@@ -16,6 +16,8 @@ metadata:
 spec:
   interval: 1m
   targetNamespace: controllers-system
+  install:
+    createNamespace: true
   chart:
     spec:
       chart: crossplane
