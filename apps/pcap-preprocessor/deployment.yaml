@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pcap-preprocessor
+  namespace: pcap
+spec:
+  selector:
+    matchLabels:
+      app: pcap-preprocessor
+  template:
+    metadata:
+      labels:
+        app: pcap-preprocessor
+    spec:
+      volumes:
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 10Gi
+      containers:
+      - name: pcap-preprocessor
+        image: local/pcap-preprocessor:latest
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "2Gi"
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            value: test          
+          - name: AWS_SECRET_ACCESS_KEY
+            value: test          
+          - name: AWS_DEFAULT_REGION
+            value: us-east-1
+          - name: AWS_ACCOUNT_ID
+            value: "000000000000"
+          - name: AWS_ENDPOINT_URL
+            value: "http://localstack-localstack.localstack:4566"
+          - name: SQS_QUEUE_URL
+            valueFrom:
+              secretKeyRef:
+                key: endpoint
+                name: raw-bucket-events
+          - name: S3_BUCKET_NAME
+            valueFrom:
+              secretKeyRef:
+                key: endpoint
+                name: raw-bucket
+          - name: S3_BUCKET_REGION
+            valueFrom:
+              secretKeyRef:
+                key: region
+                name: raw-bucket
+        volumeMounts:
+          - mountPath: /cache
+            name: cache-volume
