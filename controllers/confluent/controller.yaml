@@ -3,11 +3,6 @@ kind: Namespace
 metadata:
   name: controllers-system
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: controllers-system
----
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
