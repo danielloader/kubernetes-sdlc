@@ -1,27 +1,28 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: confluent
+  name: crossplane-stable
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://packages.confluent.io/helm
+  url: https://charts.crossplane.io/stable
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: confluent
+  name: crossplane-stable
   namespace: flux-system
 spec:
   interval: 1m
   targetNamespace: controllers-system
   chart:
     spec:
-      chart: confluent-for-kubernetes
+      chart: crossplane
       sourceRef:
         kind: HelmRepository
-        name: confluent
+        name: crossplane-stable
         namespace: flux-system
   values:
-    namespaced: true
-    namespaceList: [kafka]
+    provider:
+      packages:
+        - "xpkg.upbound.io/crossplane-contrib/provider-aws:v0.35.0"
