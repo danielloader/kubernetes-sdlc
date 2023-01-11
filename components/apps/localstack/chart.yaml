@@ -14,9 +14,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  targetNamespace: localstack
-  install:
-    createNamespace: true
+  targetNamespace: processors
   chart:
     spec:
       chart: localstack
