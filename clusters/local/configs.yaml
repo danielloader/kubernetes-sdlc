@@ -5,7 +5,7 @@ metadata:
   name: aws-creds
   namespace: controllers-system
 stringData:
-  creds: |
+  creds: |-
     [default]
     aws_access_key_id = test
     aws_secret_access_key = test
