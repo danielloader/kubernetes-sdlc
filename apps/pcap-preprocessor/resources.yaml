@@ -22,7 +22,7 @@ spec:
                 - name: prefix
                   value: raw/
   providerConfigRef:
-    name: localstack
+    name: aws
   writeConnectionSecretToRef:
     name: raw-bucket
     namespace: preprocessor
@@ -37,7 +37,7 @@ spec:
     delaySeconds: 0
     visibilityTimeout: 600
   providerConfigRef:
-    name: localstack
+    name: aws
   writeConnectionSecretToRef:
     name: raw-bucket-events
     namespace: preprocessor
