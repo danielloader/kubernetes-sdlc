@@ -21,5 +21,6 @@ spec:
   - ../controllers/prometheus/
   - ../apps/pcap-preprocessor/
   - ../apps/localstack/
-  
+  - ../services/elastic/
+
 
