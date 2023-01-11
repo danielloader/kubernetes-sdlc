@@ -25,6 +25,7 @@ spec:
     name: localstack
   writeConnectionSecretToRef:
     name: raw-bucket
+    namespace: preprocessor
 ---
 apiVersion: sqs.aws.crossplane.io/v1beta1
 kind: Queue
@@ -39,3 +40,4 @@ spec:
     name: localstack
   writeConnectionSecretToRef:
     name: raw-bucket-events
+    namespace: preprocessor
