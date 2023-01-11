@@ -2,7 +2,7 @@ apiVersion: agent.k8s.elastic.co/v1alpha1
 kind: Agent
 metadata:
   name: fleet-server
-  namespace: elastic
+  # namespace: elastic
 spec:
   version: 8.5.3
   kibanaRef:
@@ -24,7 +24,7 @@ apiVersion: agent.k8s.elastic.co/v1alpha1
 kind: Agent
 metadata:
   name: elastic-agent
-  namespace: elastic
+  # namespace: elastic
 spec:
   version: 8.5.3
   kibanaRef:
