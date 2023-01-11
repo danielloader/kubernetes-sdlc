@@ -12,11 +12,13 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./base/
+  path: ./components/base/
   components:
   - ../controllers/crossplane/
   - ../controllers/confluent/
   - ../controllers/elastic/
   - ../controllers/keda/
   - ../controllers/prometheus/
+  - ../apps/pcap-preprocessor/
+  - ../apps/localstack/
 
