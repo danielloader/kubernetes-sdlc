@@ -1,32 +1,30 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: controllers-system
+  name: monitoring
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: confluent
+  name: prometheus-community
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://packages.confluent.io/helm
+  url: https://prometheus-community.github.io/helm-charts
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: confluent
+  name: prometheus-community
   namespace: flux-system
 spec:
   interval: 1m
-  targetNamespace: controllers-system
+  targetNamespace: monitoring
   chart:
     spec:
-      chart: confluent-for-kubernetes
+      chart: kube-prometheus-stack
       sourceRef:
         kind: HelmRepository
-        name: confluent
+        name: prometheus-community
         namespace: flux-system
-  values:
-    namespaced: true
-    namespaceList: [kafka]
+---

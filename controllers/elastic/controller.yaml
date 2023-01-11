@@ -6,27 +6,26 @@ metadata:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: confluent
+  name: elastic
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://packages.confluent.io/helm
+  url: https://helm.elastic.co
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: confluent
+  name: eck-operator
   namespace: flux-system
 spec:
   interval: 1m
   targetNamespace: controllers-system
   chart:
     spec:
-      chart: confluent-for-kubernetes
+      chart: eck-operator
       sourceRef:
         kind: HelmRepository
-        name: confluent
+        name: elastic
         namespace: flux-system
-  values:
-    namespaced: true
-    namespaceList: [kafka]
+---
+

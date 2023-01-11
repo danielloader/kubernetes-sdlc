@@ -15,3 +15,8 @@ spec:
   path: ./base/
   components:
   - ../controllers/crossplane/
+  - ../controllers/confluent/
+  - ../controllers/elastic/
+  - ../controllers/keda/
+  - ../controllers/prometheus/
+
