@@ -3,7 +3,7 @@ kind: Secret
 type: Opaque
 metadata:
   name: aws-creds
-  namespace: applications
+  namespace: processors
 stringData:
   creds: |-
     [default]
@@ -23,6 +23,6 @@ spec:
   credentials:
     source: Secret
     secretRef:
-      namespace: applications
+      namespace: processors
       name: aws-creds
       key: creds
