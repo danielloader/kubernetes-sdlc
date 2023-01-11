@@ -3,7 +3,7 @@ kind: Secret
 type: Opaque
 metadata:
   name: aws-creds
-  namespace: flux-system
+  namespace: applications
 stringData:
   creds: |-
     [default]
@@ -23,6 +23,6 @@ spec:
   credentials:
     source: Secret
     secretRef:
-      namespace: controllers-system
+      namespace: applications
       name: aws-creds
       key: creds
