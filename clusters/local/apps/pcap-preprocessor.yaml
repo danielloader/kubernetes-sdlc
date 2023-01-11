@@ -11,6 +11,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/apps/pcap-preprocessor
+  path: ./apps/pcap-preprocessor
   prune: true
   wait: true
