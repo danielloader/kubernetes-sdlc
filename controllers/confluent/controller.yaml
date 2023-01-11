@@ -3,28 +3,35 @@ kind: Namespace
 metadata:
   name: controllers-system
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: controllers-system
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: kedacore
+  name: confluent
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://kedacore.github.io/charts
+  url: https://packages.confluent.io/helm
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
-  name: keda
+  name: confluent
   namespace: flux-system
 spec:
   interval: 1m
   targetNamespace: controllers-system
   chart:
     spec:
-      chart: keda
+      chart: confluent-for-kubernetes
       sourceRef:
         kind: HelmRepository
-        name: kedacore
+        name: confluent
         namespace: flux-system
----
+  values:
+    namespaced: true
+    namespaceList: [kafka]
