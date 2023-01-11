@@ -25,7 +25,7 @@ spec:
     name: aws
   writeConnectionSecretToRef:
     name: raw-bucket
-    namespace: preprocessor
+    namespace: applications
 ---
 apiVersion: sqs.aws.crossplane.io/v1beta1
 kind: Queue
@@ -40,4 +40,4 @@ spec:
     name: aws
   writeConnectionSecretToRef:
     name: raw-bucket-events
-    namespace: preprocessor
+    namespace: applications
