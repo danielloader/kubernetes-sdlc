@@ -73,6 +73,9 @@ spec:
   interval: 1h
   retryInterval: 1m
   timeout: 5m
+  dependsOn:
+    - name: controllers
+      namespace: flux-system
   prune: true
   wait: true
   sourceRef:
