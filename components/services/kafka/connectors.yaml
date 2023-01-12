@@ -29,20 +29,20 @@ spec:
   restartPolicy:
     type: OnFailure
 ---
-apiVersion: platform.confluent.io/v1beta1
-kind: Connector
-metadata:
-  name: pdns-elasticsearch
-  namespace: pdns
-  labels:
-    nominet.uk/function: egress
-spec:
-  class: "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector"
-  taskMax: 1
-  connectClusterRef:
-    name: connect
-  configs:
-    connection.url: http://kafka-connect-elasticsearch:9200
-  restartPolicy:
-    type: OnFailure
----
+# apiVersion: platform.confluent.io/v1beta1
+# kind: Connector
+# metadata:
+#   name: pdns-elasticsearch # currently not working until TLS resolved
+#   namespace: pdns
+#   labels:
+#     nominet.uk/function: egress
+# spec:
+#   class: "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector"
+#   taskMax: 1
+#   connectClusterRef:
+#     name: connect
+#   configs:
+#     connection.url: https://kafka-connect-elasticsearch:9200
+#   restartPolicy:
+#     type: OnFailure
+# ---
