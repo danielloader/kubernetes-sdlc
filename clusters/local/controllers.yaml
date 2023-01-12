@@ -18,6 +18,7 @@ spec:
   - ../controllers/confluent/
   - ../controllers/keda/
   - ../controllers/prometheus/
+  resources:
   - ../controllers/linkerd/
   # - ../controllers/elastic/ # disabled for RAM reasons
 
