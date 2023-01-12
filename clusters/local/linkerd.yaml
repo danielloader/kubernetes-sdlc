@@ -1,39 +1,38 @@
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: linkerd
-  annotations:
-    linkerd.io/inject: disabled
-  labels:
-    linkerd.io/is-control-plane: "true"
-    config.linkerd.io/admission-webhooks: disabled
-    linkerd.io/control-plane-ns: linkerd
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: linkerd
-  namespace: flux-system
-spec:
-  interval: 1h
-  retryInterval: 1m
-  timeout: 5m
-  prune: true
-  wait: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./components/system/linkerd/
-  patches:
-    - patch: |
-        - op: add
-          path: /spec/values
-          value:
-            proxyInit:
-              runAsRoot: true
-      target:
-        kind: HelmRelease
-        name: linkerd-control-plane
-        namespace: linkerd
-
----
+# kind: Namespace
+# apiVersion: v1
+# metadata:
+#   name: linkerd
+#   annotations:
+#     linkerd.io/inject: disabled
+#   labels:
+#     linkerd.io/is-control-plane: "true"
+#     config.linkerd.io/admission-webhooks: disabled
+#     linkerd.io/control-plane-ns: linkerd
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+# kind: Kustomization
+# metadata:
+#   name: linkerd
+#   namespace: flux-system
+# spec:
+#   interval: 1h
+#   retryInterval: 1m
+#   timeout: 5m
+#   prune: true
+#   wait: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: flux-system
+#   path: ./components/system/linkerd/
+#   patches:
+#     - patch: |
+#         - op: add
+#           path: /spec/values
+#           value:
+#             proxyInit:
+#               runAsRoot: true
+#       target:
+#         kind: HelmRelease
+#         name: linkerd-control-plane
+#         namespace: linkerd
+# ---
