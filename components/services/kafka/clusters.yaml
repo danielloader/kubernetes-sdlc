@@ -45,8 +45,6 @@ spec:
   image:
     application: confluentinc/cp-server-connect:7.3.0
     init: confluentinc/confluent-init-container:2.5.0
-  connectorTLSCerts:
-    - directoryPath
   build:
     type: onDemand
     onDemand:
