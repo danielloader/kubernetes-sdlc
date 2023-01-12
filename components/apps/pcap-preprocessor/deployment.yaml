@@ -33,7 +33,7 @@ spec:
           - name: AWS_ACCOUNT_ID
             value: "000000000000"
           - name: AWS_ENDPOINT_URL
-            value: "http://localstack-localstack.localstack:4566"
+            value: "http://pdns-localstack:4566"
           - name: SQS_QUEUE_URL
             valueFrom:
               secretKeyRef:
