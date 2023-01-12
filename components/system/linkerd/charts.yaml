@@ -56,7 +56,6 @@ spec:
       interval: 40m
       valuesFiles:
         - values.yaml
-        - values-ha.yaml
   valuesFrom:
     - kind: Secret
       name: linkerd-certs

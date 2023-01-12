@@ -24,4 +24,11 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./components/system/linkerd/
+  patch: | 
+    - op: add
+      path: /spec/values
+      value:
+        proxyInit:
+          runAsRoot: true
+
 ---
