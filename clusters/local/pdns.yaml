@@ -2,7 +2,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
   name: pdns-elastic
-  namespace: flux-system
+  namespace: pdns
 spec:
   interval: 1h
   retryInterval: 1m
@@ -21,7 +21,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
   name: pdns-kafka
-  namespace: flux-system
+  namespace: pdns
 spec:
   interval: 1h
   retryInterval: 1m
@@ -40,7 +40,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
   name: pdns-pre-processor
-  namespace: flux-system
+  namespace: pdns
 spec:
   interval: 1h
   retryInterval: 1m
@@ -57,7 +57,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
   name: pdns-localstack
-  namespace: flux-system
+  namespace: pdns
 spec:
   interval: 1h
   retryInterval: 1m
