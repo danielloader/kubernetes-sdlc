@@ -12,6 +12,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   dependsOn:
     - name: pdns-controllers
   path: ./components/services/elastic/
@@ -31,6 +32,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   dependsOn:
     - name: pdns-controllers
   path: ./components/services/kafka/
@@ -50,6 +52,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   path: ./components/apps/pcap-preprocessor/
   targetNamespace: pdns
 ---
@@ -67,5 +70,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   path: ./components/apps/localstack/
   targetNamespace: pdns
