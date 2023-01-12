@@ -54,6 +54,9 @@ spec:
           - name: kafka-connect-s3-source
             owner: confluentinc
             version: 2.4.3
+          - name: kafka-connect-elasticsearch
+            owner: confluentinc
+            version: latest
   configOverrides:
     server:
       - config.storage.replication.factor=1

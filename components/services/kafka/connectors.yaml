@@ -2,8 +2,10 @@
 apiVersion: platform.confluent.io/v1beta1
 kind: Connector
 metadata:
-  name: s3
-  namespace: kafka
+  name: pdns-tshark-s3
+  namespace: pdns
+  labels:
+    nominet.uk/function: ingress
 spec:
   class: "io.confluent.connect.s3.source.S3SourceConnector"
   taskMax: 1
@@ -16,7 +18,7 @@ spec:
     mode: "GENERIC"
     s3.bucket.name: "raw-bucket"
     s3.region: "us-east-1"
-    store.url: "http://localstack-localstack.localstack:4566"
+    store.url: "http://pdns-localstack:4566"
     task.batch.size: "10"
     topic.regex.list: "tshark.ingress.dns.customer.nominet.uk:.*"
     topics.dir: "json"
@@ -24,6 +26,23 @@ spec:
     value.converter.schemas.enable: "false"
     record.batch.max.size: "10000"
     s3.poll.interval.ms: "10000"
+  restartPolicy:
+    type: OnFailure
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: pdns-elasticsearch
+  namespace: pdns
+  labels:
+    nominet.uk/function: egress
+spec:
+  class: "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector"
+  taskMax: 1
+  connectClusterRef:
+    name: connect
+  configs:
+    connection.url: http://kafka-connect-elasticsearch:9200
   restartPolicy:
     type: OnFailure
 ---
