@@ -14,7 +14,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  targetNamespace: applications
+  targetNamespace: pdns
   chart:
     spec:
       chart: localstack
