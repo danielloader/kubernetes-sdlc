@@ -19,7 +19,7 @@ spec:
     hostnameImmutable: true
     url:
       type: Static
-      static: "http://localstack-localstack.localstack:4566"
+      static: "http://pdns-localstack.pdns:4566"
   credentials:
     source: Secret
     secretRef:
