@@ -24,11 +24,16 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./components/system/linkerd/
-  patch: | 
-    - op: add
-      path: /spec/values
-      value:
-        proxyInit:
-          runAsRoot: true
+  patches:
+    - patch: |
+        - op: add
+          path: /spec/values
+          value:
+            proxyInit:
+              runAsRoot: true
+      target:
+        kind: HelmRelease
+        name: linkerd-control-plane
+        namespace: linkerd
 
 ---
