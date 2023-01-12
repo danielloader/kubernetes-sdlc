@@ -15,7 +15,7 @@ metadata:
 spec:
   timeout: 3m
   interval: 10m
-  releaseName: linkerd
+  releaseName: linkerd-crds
   targetNamespace: linkerd
   storageNamespace: linkerd
   chart:
