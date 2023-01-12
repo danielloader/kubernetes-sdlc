@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pcap-preprocessor
-  namespace: applications
+  namespace: pdns
 spec:
   selector:
     matchLabels:
