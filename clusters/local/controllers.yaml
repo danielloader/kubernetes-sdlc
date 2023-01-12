@@ -16,7 +16,7 @@ spec:
   components:
   - ../controllers/crossplane/
   - ../controllers/confluent/
-  - ../controllers/elastic/
   - ../controllers/keda/
   - ../controllers/prometheus/
+  # - ../controllers/elastic/ # disabled for RAM reasons
 
