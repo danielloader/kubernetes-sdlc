@@ -19,7 +19,7 @@ function emit_lines() {
 }
 
 if [ "${VERBOSE}" == "true" ]; then
-  (emit_lines | stdbuf -eL pv --line-mode --rate-limit=${RECORDS_PER_SECOND} --bytes --rate --force --interval=1 --name="${KAFKA_BROKER}/${KAFKA_TOPIC} records" | stdbuf -eL pv --rate --bytes --force --name="Total Data" | kafkacat -P -b "${KAFKA_BROKER}" -t "${KAFKA_TOPIC}" ) 2>&1 | stdbuf -o0 tr '\r' '\n'
+  (emit_lines | stdbuf -eL pv --line-mode --rate-limit=${RECORDS_PER_SECOND} --bytes --rate --force --interval=1 --name="${KAFKA_BROKER}/${KAFKA_TOPIC} records" | stdbuf -eL pv --rate --bytes --force --name="Total Data" | kafkacat -P -b "${KAFKA_BROKER}" -t "${KAFKA_TOPIC}" -z lz4 ) 2>&1 | stdbuf -o0 tr '\r' '\n'
 else
-  emit_lines | pv --line-mode --rate-limit=${RECORDS_PER_SECOND} | kafkacat -P -b "${KAFKA_BROKER}" -t "${KAFKA_TOPIC}"
+  emit_lines | pv --line-mode --rate-limit=${RECORDS_PER_SECOND} | kafkacat -P -b "${KAFKA_BROKER}" -t "${KAFKA_TOPIC}" -z lz4
 fi
