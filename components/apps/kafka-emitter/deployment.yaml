@@ -25,6 +25,6 @@ spec:
             memory: "2Gi"
         env:
           - name: VERBOSE
-            value: "true"        
+            value: "false"        
          
 
