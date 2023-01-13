@@ -26,6 +26,8 @@ spec:
             cpu: "1000m"
         env:
           - name: VERBOSE
-            value: "false"        
+            value: "false"
+          - name: RECORDS_PER_SECOND
+            value: "10000"
          
 
