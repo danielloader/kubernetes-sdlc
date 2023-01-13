@@ -5,4 +5,7 @@
 
 ### Local
 
-flux bootstrap git --url=ssh://git@gitlab.com/***REMOVED***/fluxcd-testbed.git --branch=main --path=clusters/local --private-key-file=${HOME}/.ssh/id_rsa
+```
+export GITLAB_TOKEN= # put your personal access token here with api, read_api and read_repository access
+flux bootstrap gitlab --token-auth --owner=***REMOVED*** --repository=fluxcd-testbed --branch=reorg --verbose --path=./clusters/local
+```
