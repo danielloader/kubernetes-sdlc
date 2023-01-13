@@ -24,8 +24,7 @@ spec:
           limits:
             memory: "2Gi"
         env:
-          - name: AWS_ACCESS_KEY_ID
-            value: test          
-          - name: AWS_SECRET_ACCESS_KEY
-            value: test          
+          - name: VERBOSE
+            value: "true"        
+         
 
