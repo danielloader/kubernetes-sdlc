@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-emitter
+  namespace: pdns
+spec:
+  selector:
+    matchLabels:
+      app: kafka-emitter
+  template:
+    metadata:
+      labels:
+        app: kafka-emitter
+    spec:
+      volumes:
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 10Gi
+      containers:
+      - name: kafka-emitter
+        image: local/kafka-emitter:latest
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "100Mi"
+            # cpu: "1000m"
+        env:
+          - name: VERBOSE
+            value: "false"
+          - name: RECORDS_PER_SECOND
+            value: "10000"
+         
+
