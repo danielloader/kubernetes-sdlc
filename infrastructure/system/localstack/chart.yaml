@@ -6,7 +6,7 @@ metadata:
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: localstack
+  name: localstack-charts
   namespace: flux-system
 spec:
   interval: 1h
@@ -25,7 +25,7 @@ spec:
       chart: localstack
       sourceRef:
         kind: HelmRepository
-        name: localstack
+        name: localstack-charts
         namespace: flux-system
   values:
     service:
