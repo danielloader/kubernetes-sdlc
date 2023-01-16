@@ -26,5 +26,5 @@ spec:
           - name: RECORDS_PER_SECOND
             value: "100"
           - name: KAFKA_TOPIC
-            value: loadtest.dummy
+            value: "loadtest.dummy"
 
