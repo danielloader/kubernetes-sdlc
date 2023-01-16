@@ -22,12 +22,12 @@ spec:
         imagePullPolicy: Never
         resources:
           limits:
-            memory: "100Mi"
+            memory: "200Mi"
             # cpu: "1000m"
         env:
           - name: VERBOSE
             value: "false"
           - name: RECORDS_PER_SECOND
-            value: "10000"
+            value: "100"
          
 
