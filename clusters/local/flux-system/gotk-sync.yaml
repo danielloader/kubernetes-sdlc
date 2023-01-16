@@ -8,17 +8,10 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: reorg
+    branch: second-reorg
   secretRef:
     name: flux-system
   url: https://gitlab.com/***REMOVED***/fluxcd-testbed.git
-  ignore: |
-    # exclude all
-    /*
-    # include only relevant paths for gitops
-    !/apps
-    !/clusters
-    !/infrastructure
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
