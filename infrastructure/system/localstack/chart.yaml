@@ -7,7 +7,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: localstack
-  namespace: localstack
+  namespace: flux-system
 spec:
   interval: 1h
   url: https://localstack.github.io/helm-charts
@@ -16,7 +16,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: localstack
-  namespace: pdns
+  namespace: flux-system
 spec:
   interval: 1m
   targetNamespace: localstack
@@ -26,7 +26,6 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: localstack
-        namespace: lackstack
   values:
     service:
       type: ClusterIP
