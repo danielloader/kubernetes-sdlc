@@ -63,7 +63,7 @@ spec:
     namespace: flux-system
   dependsOn:
     - name: localstack
-    - namespace: pdns
+      namespace: pdns
   path: ./components/apps/pcap-preprocessor/
   targetNamespace: pdns
 ---
@@ -76,15 +76,15 @@ spec:
   interval: 1h
   retryInterval: 1m
   timeout: 5m
-  dependsOn:
-    - name: crossplane-controller
-      namespace: flux-system
   prune: true
   wait: true
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
+  dependsOn:
+    - name: crossplane-controller
+      namespace: flux-system
   path: ./components/apps/localstack/
   targetNamespace: pdns
 ---
