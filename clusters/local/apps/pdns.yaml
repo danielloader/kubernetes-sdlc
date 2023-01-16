@@ -20,7 +20,7 @@ metadata:
 #     name: flux-system
 #     namespace: flux-system
 #   dependsOn:
-#     - name: pdns-controllers
+#     - name: elastic-controller
 #       namespace: flux-system
 #   path: ./components/services/elastic/
 #   targetNamespace: pdns
@@ -43,7 +43,7 @@ spec:
   dependsOn:
     - name: confluent-controller
       namespace: flux-system
-  path: ./components/services/kafka/
+  path: ./apps/kafka
   targetNamespace: pdns
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
@@ -64,7 +64,7 @@ spec:
   dependsOn:
     - name: localstack
       namespace: pdns
-  path: ./components/apps/pcap-preprocessor/
+  path: ./apps/pcap-preprocessor/
   targetNamespace: pdns
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
@@ -85,7 +85,7 @@ spec:
   dependsOn:
     - name: crossplane-controller
       namespace: flux-system
-  path: ./components/apps/localstack/
+  path: ./infrastructure/system/localstack
   targetNamespace: pdns
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
@@ -106,5 +106,5 @@ spec:
   dependsOn:
     - name: kafka
       namespace: pdns
-  path: ./components/apps/kafka-emitter/
+  path: ./apps/kafka-emitter/
   targetNamespace: pdns
