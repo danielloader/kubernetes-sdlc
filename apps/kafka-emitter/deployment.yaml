@@ -12,10 +12,6 @@ spec:
       labels:
         app: kafka-emitter
     spec:
-      volumes:
-        - name: cache-volume
-          emptyDir:
-            sizeLimit: 10Gi
       containers:
       - name: kafka-emitter
         image: local/kafka-emitter:latest
