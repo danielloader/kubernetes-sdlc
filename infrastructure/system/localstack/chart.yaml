@@ -25,7 +25,8 @@ spec:
       chart: localstack
       sourceRef:
         kind: HelmRepository
-        name: flux-system
+        name: localstack
+        namespace: flux-system
   values:
     service:
       type: ClusterIP
