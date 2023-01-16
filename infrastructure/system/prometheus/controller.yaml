@@ -27,3 +27,7 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
+  values:
+    prometheus-node-exporter:
+      hostRootFsMount:
+        enabled: false
