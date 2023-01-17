@@ -27,7 +27,7 @@ spec:
         kind: HelmRepository
         name: redpanda
         namespace: flux-system
-  values:
+  # values:
     # monitoring:
     #   enabled: true
     # logging:
