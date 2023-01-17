@@ -42,4 +42,18 @@ spec:
 #     connection.url: https://kafka-connect-elasticsearch:9200
 #   restartPolicy:
 #     type: OnFailure
-# ---
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: redpanda
+  labels:
+    ***REMOVED***.uk/function: replication
+spec:
+  class: "org.apache.kafka.connect.mirror.MirrorSourceConnector"
+  taskMax: 1
+  configs:
+    topics: "raw"
+    target.cluster.bootstrap.servers: "redpanda:9092"
+    source.cluster.bootstrap.servers: "kafka:9092"
+    source.cluster.alias: "self"
