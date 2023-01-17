@@ -41,7 +41,7 @@ spec:
     name: flux-system
     namespace: flux-system
   dependsOn:
-    - name: confluent-controller
+    - name: redpanda-controller
       namespace: flux-system
   path: ./apps/redpanda
   targetNamespace: pdns
