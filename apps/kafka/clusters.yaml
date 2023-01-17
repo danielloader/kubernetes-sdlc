@@ -90,6 +90,9 @@ spec:
       - rest.extension.classes=io.confluent.connect.replicator.monitoring.ReplicatorMonitoringExtension
       # This specifies that Replicator is the Connector configured
       - connector.class=io.confluent.connect.replicator.ReplicatorSourceConnector
+      - config.storage.replication.factor=1
+      - offset.storage.replication.factor=1
+      - status.storage.replication.factor=1
   dependencies:
     kafka:
       bootstrapEndpoint: kafka:9071
