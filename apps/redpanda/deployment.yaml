@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redpanda
-  namespace: default
 spec:
   selector:
     matchLabels:
@@ -27,7 +26,7 @@ spec:
           name: "kafka"
         args:
           - "--overprovisioned"
-          - "--set redpanda.empty_seed_starts_cluster=false"
+          - "--set=redpanda.empty_seed_starts_cluster=false"
           - "--smp=1"
           - "--memory=1G"
           - "--reserve-memory=0M"
