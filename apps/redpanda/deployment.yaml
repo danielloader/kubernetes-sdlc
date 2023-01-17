@@ -14,9 +14,9 @@ spec:
       containers:
       - name: redpanda
         image: vectorized/redpanda:v22.3.11
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
+        # resources:
+        #   limits:
+        #     memory: "2Gi"
+        #     cpu: "1000m"
         ports:
         - containerPort: 9092
