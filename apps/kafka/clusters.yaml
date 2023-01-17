@@ -3,7 +3,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Zookeeper
 metadata:
   name: zookeeper
-  namespace: pdns
 spec:
   replicas: 1
   image:
@@ -16,7 +15,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
 metadata:
   name: kafka
-  namespace: pdns
 spec:
   replicas: 1
   image:
@@ -39,7 +37,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Connect
 metadata:
   name: connect
-  namespace: pdns
 spec:
   replicas: 1
   image:
@@ -70,7 +67,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: ControlCenter
 metadata:
   name: controlcenter
-  namespace: pdns
 spec:
   replicas: 1
   podTemplate: 

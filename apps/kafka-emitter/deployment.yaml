@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kafka-emitter
-  namespace: pdns
 spec:
   selector:
     matchLabels:
