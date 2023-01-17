@@ -64,6 +64,37 @@ spec:
       bootstrapEndpoint: kafka:9071
 ---
 apiVersion: platform.confluent.io/v1beta1
+kind: Connect
+metadata:
+  name: replicator
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-enterprise-replicator:7.3.0
+    init: confluentinc/confluent-init-container:2.5.0
+  podTemplate:
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+    envVars:
+      # The  Confluent Replicator Monitoring Extension allows for detailed metrics from Replicator tasks to be 
+      # collected using an exposed REST API.
+      # You'll need to update the version string in replicate-test-extension-<version>.jar based on what 
+      # CP version you are using
+      - name: CLASSPATH
+        value: /usr/share/java/kafka-connect-replicator/replicator-rest-extension-7.3.0.jar
+  configOverrides:
+    server:
+      # To activate the monitoring extension, configure this property
+      - rest.extension.classes=io.confluent.connect.replicator.monitoring.ReplicatorMonitoringExtension
+      # This specifies that Replicator is the Connector configured
+      - connector.class=io.confluent.connect.replicator.ReplicatorSourceConnector
+  dependencies:
+    kafka:
+      bootstrapEndpoint: kafka:9071
+---
+apiVersion: platform.confluent.io/v1beta1
 kind: ControlCenter
 metadata:
   name: controlcenter
