@@ -19,7 +19,7 @@ spec:
     s3.region: "us-east-1"
     store.url: "http://localstack-localstack.localstack:4566"
     task.batch.size: "1"
-    topic.regex.list: "tshark.ingress.dns.customer.***REMOVED***.uk:.*"
+    topic.regex.list: "tshark.ingress.responses.dns.customer.***REMOVED***.uk:.*"
     topics.dir: "json"
     value.converter: "org.apache.kafka.connect.json.JsonConverter"
     value.converter.schemas.enable: "false"
