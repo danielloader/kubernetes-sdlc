@@ -43,6 +43,8 @@ spec:
   dependsOn:
     - name: redpanda-controller
       namespace: flux-system
+    - name: cert-manager-system
+      namespace: flux-system
   path: ./apps/redpanda
   targetNamespace: pdns
 ---
