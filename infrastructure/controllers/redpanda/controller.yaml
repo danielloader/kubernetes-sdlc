@@ -28,8 +28,8 @@ spec:
         name: redpanda
         namespace: flux-system
   values:
-    monitoring:
-      enabled: true
+    # monitoring:
+    #   enabled: true
     # logging:
     #   logLevel: "debug"
     # storage:
