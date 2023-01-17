@@ -1,16 +1,20 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redpanda
+  namespace: default
 spec:
   selector:
     matchLabels:
-      app: redpanda
+      app: redpanda # has to match .spec.template.metadata.labels
+  serviceName: "redpanda"
+  replicas: 1 # by default is 1
   template:
     metadata:
       labels:
-        app: redpanda
+        app: redpanda # has to match .spec.selector.matchLabels
     spec:
+      terminationGracePeriodSeconds: 10
       containers:
       - name: redpanda
         image: vectorized/redpanda:v22.3.11
@@ -20,3 +24,11 @@ spec:
         #     cpu: "1000m"
         ports:
         - containerPort: 9092
+          name: "kafka"
+        args:
+          - "--overprovisioned"
+          - "--set redpanda.empty_seed_starts_cluster=false"
+          - "--smp=1"
+          - "--memory=1G"
+          - "--reserve-memory=0M"
+          - "--check=false"
