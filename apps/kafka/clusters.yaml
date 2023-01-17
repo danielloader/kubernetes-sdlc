@@ -66,18 +66,6 @@ spec:
     kafka:
       bootstrapEndpoint: kafka:9071
 ---
-# apiVersion: platform.confluent.io/v1beta1
-# kind: KsqlDB
-# metadata:
-#   name: ksqldb
-#   namespace: pdns
-# spec:
-#   replicas: 1
-#   image:
-#     application: confluentinc/cp-ksqldb-server:7.3.0
-#     init: confluentinc/confluent-init-container:2.5.0
-#   dataVolumeCapacity: 10Gi
-# ---
 apiVersion: platform.confluent.io/v1beta1
 kind: ControlCenter
 metadata:
@@ -102,9 +90,6 @@ spec:
   dependencies:
     schemaRegistry:
       url: http://schemaregistry:8081
-    ksqldb:
-    - name: ksqldb
-      url: http://ksqldb:8088
     connect:
     - name: connect
       url: http://connect:8083
