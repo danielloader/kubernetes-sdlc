@@ -7,7 +7,7 @@ metadata:
     ***REMOVED***.uk/function: ingress
 spec:
   class: "io.confluent.connect.s3.source.S3SourceConnector"
-  taskMax: 1
+  taskMax: 2
   connectClusterRef:
     name: connect
   configs:
