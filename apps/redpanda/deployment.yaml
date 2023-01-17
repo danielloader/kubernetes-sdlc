@@ -24,9 +24,8 @@ spec:
         ports:
         - containerPort: 9092
           name: "kafka"
-        command:
-          - "start"
         args:
+          - "start"
           - "--overprovisioned"
           - "--set=redpanda.empty_seed_starts_cluster=false"
           - "--smp=1"
