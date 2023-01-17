@@ -2,7 +2,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: Connector
 metadata:
   name: pdns-tshark-s3
-  namespace: pdns
   labels:
     nominet.uk/function: ingress
 spec:
@@ -32,7 +31,6 @@ spec:
 # kind: Connector
 # metadata:
 #   name: pdns-elasticsearch # currently not working until TLS resolved
-#   namespace: pdns
 #   labels:
 #     nominet.uk/function: egress
 # spec:

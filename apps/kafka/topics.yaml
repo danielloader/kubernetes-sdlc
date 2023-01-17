@@ -2,7 +2,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: tshark.ingress.responses.dns.customer.nominet.uk
-  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 1
@@ -16,7 +15,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: responses.dns.customer.nominet.uk
-  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 1
@@ -30,7 +28,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: elastic.egress.dns.customer.nominet.uk
-  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 1
@@ -44,7 +41,6 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: loadtest.dummy
-  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 12
