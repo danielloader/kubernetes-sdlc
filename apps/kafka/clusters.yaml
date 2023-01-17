@@ -120,4 +120,6 @@ spec:
     connect:
     - name: connect
       url: http://connect:8083
+    - name: replicator
+      url: http://replicator:8083
 ---
