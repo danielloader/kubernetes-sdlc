@@ -20,11 +20,11 @@ spec:
   patches:
   - patch: |
       - op: add
-        path: /spec
+        path: /spec/values
         value:
-          values:
-            namespaced: true
-            namespaceList: [kafka]
+          namespaced: true
+          namespaceList:
+            - kafka
     target:
       kind: HelmRelease
       name: confluent
