@@ -18,12 +18,12 @@ spec:
         resources:
           limits:
             memory: "200Mi"
-            # cpu: "1000m"
+            cpu: "1000m"
         env:
           - name: VERBOSE
             value: "false"
           - name: RECORDS_PER_SECOND
             value: "100"
           - name: KAFKA_TOPIC
-            value: "loadtest.dummy"
+            value: "input.dummy"
 
