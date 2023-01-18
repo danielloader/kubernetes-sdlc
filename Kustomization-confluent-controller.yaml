@@ -18,10 +18,13 @@ spec:
   force: false
   interval: 1h
   patches:
-  - patch: |
-      - op: add
-        path: /spec/values
-        value:
+  - patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: not-used
+      spec:
+        values:
           namespaced: true
           namespaceList:
             - kafka
