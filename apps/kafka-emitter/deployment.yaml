@@ -26,4 +26,5 @@ spec:
             value: "100"
           - name: KAFKA_TOPIC
             value: "input.dummy"
-
+          - name: SOURCE_PATH
+            value: "testdata.txt"
