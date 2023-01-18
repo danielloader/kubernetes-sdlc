@@ -1,0 +1,73 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  annotations:
+    reconcile.fluxcd.io/requestedAt: "2023-01-18T16:09:54.025522562Z"
+  creationTimestamp: "2023-01-18T16:07:48Z"
+  finalizers:
+  - finalizers.fluxcd.io
+  generation: 2
+  labels:
+    kustomize.toolkit.fluxcd.io/name: flux-system
+    kustomize.toolkit.fluxcd.io/namespace: flux-system
+  name: confluent-controller
+  namespace: flux-system
+  resourceVersion: "2465"
+  uid: 5afd21da-e31d-4224-a229-6ccbf66adb33
+spec:
+  force: false
+  interval: 1h
+  patches:
+  - patch: |
+      - op: add
+        path: /spec
+        value:
+          values:
+            namespaced: true
+            namespaceList: [kafka]
+    target:
+      kind: HelmRelease
+      name: confluent
+  path: ./infrastructure/controllers/confluent
+  prune: true
+  retryInterval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  timeout: 5m
+  wait: true
+status:
+  conditions:
+  - lastTransitionTime: "2023-01-18T16:09:54Z"
+    message: Building manifests for revision second-reorg/8cbb13b8b6deeb63292b619f27d39a0f1246cf88
+      with a timeout of 5m0s
+    observedGeneration: 2
+    reason: ProgressingWithRetry
+    status: "True"
+    type: Reconciling
+  - lastTransitionTime: "2023-01-18T16:09:54Z"
+    message: |-
+      kustomize build failed: trouble configuring builtin PatchTransformer with config: `
+      patch: |-
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        spec:
+          values:
+            namespaced: true
+            namespaceList: [kafka]
+      target:
+        kind: HelmRelease
+        name: confluent
+      `: unable to parse SM or JSON patch from [apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      spec:
+        values:
+          namespaced: true
+          namespaceList: [kafka]]
+    observedGeneration: 2
+    reason: BuildFailed
+    status: "False"
+    type: Ready
+  lastAttemptedRevision: second-reorg/8cbb13b8b6deeb63292b619f27d39a0f1246cf88
+  lastHandledReconcileAt: "2023-01-18T16:09:54.025522562Z"
+  observedGeneration: -1
