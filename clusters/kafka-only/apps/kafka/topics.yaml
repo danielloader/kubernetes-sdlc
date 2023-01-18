@@ -2,6 +2,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: input.dummy
+  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 12
@@ -15,6 +16,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: loopback.dummy
+  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 12
@@ -28,6 +30,7 @@ apiVersion: platform.confluent.io/v1beta1
 kind: KafkaTopic
 metadata:
   name: output.dummy
+  namespace: kafka
 spec:
   replicas: 1
   partitionCount: 12
