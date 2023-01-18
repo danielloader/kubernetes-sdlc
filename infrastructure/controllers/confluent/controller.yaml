@@ -27,6 +27,4 @@ spec:
         kind: HelmRepository
         name: confluent
         namespace: flux-system
-  values:
-    namespaced: true
-    namespaceList: [pdns]
+
