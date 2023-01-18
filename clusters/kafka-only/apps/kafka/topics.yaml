@@ -1,0 +1,39 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: input.dummy
+spec:
+  replicas: 1
+  partitionCount: 12
+  configs:
+    compression.type: "producer"
+    retention.ms: "28800000"
+    max.message.bytes: "1048588"
+    retention.bytes: "1073741824"
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: loopback.dummy
+spec:
+  replicas: 1
+  partitionCount: 12
+  configs:
+    compression.type: "producer"
+    retention.ms: "28800000"
+    max.message.bytes: "1048588"
+    retention.bytes: "1073741824"
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: output.dummy
+spec:
+  replicas: 1
+  partitionCount: 12
+  configs:
+    compression.type: "producer"
+    retention.ms: "28800000"
+    max.message.bytes: "1048588"
+    retention.bytes: "1073741824"
+---
