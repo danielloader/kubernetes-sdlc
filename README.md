@@ -18,6 +18,30 @@ The rationale for attempting this workflow can be broadly split up into the foll
 * **Audit of changes** - since you're using merge requests, there's an audit log in the git repository of changes made, when and by whom, with who approved them.
 * **Disaster recovery** - take the above and the realisation you can bootstrap any new cluster provisioned into the state of an existing cluster - useful for cloning test environments as much as bringing up a production environment.
 
+
+## Bootstrapping
+
+As you may have noticed, a closed loop needs to start somewhere! Having the git repository representing the state, and a cluster listening to that state from a raw state is called bootstrapping.
+
+![bootstrapping](docs/gitops-bootstrap.drawio.svg)
+
+Flux provides a CLI tool to do this, as it has to simultaneously deploy a GitRepository object for the source controller to go clone from, as well as the config for the GitRepository object itself, in git. Failure to do this would mean the first time the source controller ran a reconciliation run, it'd detach itself from the repository as the URL for the remote, would be stored in this object, in YAML, in the repository.
+
+This can be seen in [gotk-sync.yaml](clusters/local/flux-system/gotk-sync.yaml), where in the core objects are defined, and link the cluster back to themselves.
+
+To get around this bootstrap paradox the CLI does this all simultaneously - both creating the objects that store the remote urls and config/secrets to pull from them, as well storing the resulting objects it pushes to the cluster in the source try and pushes them.
+
+### Example
+
+To create a new cluster template, for example `clusters/abc` with a different combination of services from the components in this repository, you need to use the `flux bootstrap` command.
+
+This also requires a personal access token from Gitlab so that it can insure the repository exists (it'll create it if it doesn't), and if it does can write commits into the tree into the `clusters/` directory. Remember to set the branch you wish to push this new cluster template into.
+
+```bash
+export GITLAB_TOKEN= # put your personal access token here with api, read_api and read_repository access
+flux bootstrap gitlab --token-auth --owner=nominet/cyber/architecture-team --repository=fluxcd-testbed --branch=main --path=./clusters/abc
+```
+
 ## Deployment
 
 ### Setting up Docker Desktop
@@ -73,15 +97,5 @@ To deploy an existing cluster template you need to add a GitRepository object th
     
     ![K9s showing successful deployment](docs/k9s-reconcile-success.png)
 
-### Bootstrap a new cluster with a blank controller template
-
-To create a new cluster template, for example `clusters/abc` with a different combination of services from the components in this repository, you need to use the `flux bootstrap` command.
-
-This also requires a personal access token from Gitlab so that it can assure the repository exists (it'll create it if it doesn't), and if it does, can write commits into the tree into the `clusters/` directory. Remember to set the branch you wish to push this new cluster template into.
-
-```bash
-export GITLAB_TOKEN= # put your personal access token here with api, read_api and read_repository access
-flux bootstrap gitlab --token-auth --owner=nominet/cyber/architecture-team --repository=fluxcd-testbed --branch=main --path=./clusters/abc
-```
-
-For documentation how sub components work, follow the README.md chains down the directories.
+For documentation how cluster templates, components and sub components work, follow the README.md chains down the directories. 
+For example, start in `./clusters/local/README.md` and follow the links from there.
