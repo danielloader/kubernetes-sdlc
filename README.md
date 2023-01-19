@@ -21,15 +21,17 @@ The rationale for attempting this workflow can be broadly split up into the foll
 
 ## Bootstrapping
 
+> **NOTE**: _If you're deploying an existing cluster template, you can skip to [deployment](#deploy-existing-cluster-template)._
+
 As you may have noticed, a closed loop needs to start somewhere! Having the git repository representing the state, and a cluster listening to that state from a raw state is called bootstrapping.
 
 ![bootstrapping](docs/gitops-bootstrap.drawio.svg)
 
-Flux provides a CLI tool to do this, as it has to simultaneously deploy a GitRepository object for the source controller to go clone from, as well as the config for the GitRepository object itself, in git. Failure to do this would mean the first time the source controller ran a reconciliation run, it'd detach itself from the repository as the URL for the remote, would be stored in this object, in YAML, in the repository.
+Flux provides a CLI tool to do this, as it has to deploy a `GitRepository` object for the source controller to go clone from, as well as the config for the `GitRepository` object, in git. Failure to do this would mean the first time the source controller ran a reconciliation run, it'd detach itself from the repository as the `GitRepository` object containing a upstream reference to itself, would be missing - and thus deleted.
 
-This can be seen in [gotk-sync.yaml](clusters/local/flux-system/gotk-sync.yaml), where in the core objects are defined, and link the cluster back to themselves.
+This can be seen in [`gotk-sync.yaml`](clusters/local/flux-system/gotk-sync.yaml), where in the core objects are defined, and link the cluster back to themselves.
 
-To get around this bootstrap paradox the CLI does this all simultaneously - both creating the objects that store the remote urls and config/secrets to pull from them, as well storing the resulting objects it pushes to the cluster in the source try and pushes them.
+To get around this bootstrap paradox the CLI does this all simultaneously - both creating the objects that store the remote urls and config/secrets to pull from them, as well storing the resulting objects it pushes to the cluster in the source try and pushes them before the first reconciliation run starts.
 
 ### Example
 
@@ -44,19 +46,19 @@ flux bootstrap gitlab --token-auth --owner=***REMOVED*** --repository=fluxcd-tes
 
 ## Deployment
 
-### Setting up Docker Desktop
-
 While not strictly related to this repository it's worth having a reference implementation and since most of you reading this will likely have Docker Desktop installed, the write-up will use it as a reference implementation - though if you know what you're doing it should work equally well on Kind, K3d and Rancher Desktop.
 
-#### Windows Steps
+### Docker Desktop - Windows
+
 > **WARNING**: _This is all quite memory intensive, an 8GB Windows laptop won't even be able to start a kubernetes cluster in a satisfactory way, let alone applications on top of it, 16GB will be tight, as by default WSL2 sets the maximum memory available to the virtual machine to 50% of the host capacity. 32GB is mostly painless. If you don't have the capacity, consider using a cloud provider to run a cluster._
 
 1. Have WSL2 installed and confirmed working, do first login etc.
 1. Have Docker Desktop installed, and confirm the `docker ps` command is working correctly from a WSL shell session.
 1. Enable the kubernetes service option in Docker Desktop settings.
+    
     ![docker-desktop-windows](docs/windows-docker-desktop.png)
 
-#### MacOS Steps
+### Docker Desktop - MacOS
 
 > **WARNING**: _Similar warnings to Windows above, but MacOS requires a step to define the resources available. Don't skip it as the defaults are very conservative._
 
@@ -74,8 +76,9 @@ While not strictly related to this repository it's worth having a reference impl
 
 ### Deploy Existing Cluster Template
 
-To deploy an existing cluster template you need to add a GitRepository object that contains a reference to the upstream source, and an initial bootstrapping Kustomization object, which is the parent object for child Kustomizations, HelmCharts and other kubernetes objects.
+To deploy an existing cluster template you need to add a `GitRepository` object that contains a reference to the upstream source, and an initial bootstrapping Kustomization object, which is the parent object for child Kustomizations, HelmCharts and other kubernetes objects.
 
+![deployment of existing cluster template diagram](docs/gitops-deploy.drawio.svg)
 
 1. Add the FluxCD controllers to the cluster:
     > **NOTE**: _If you do not specify a cluster context, it'll use the default - but it's best to be explicit. Using `docker-desktop` as the example._
@@ -91,11 +94,17 @@ To deploy an existing cluster template you need to add a GitRepository object th
 
 1. Bootstrapping this cluster against a predefined template:
     ```
-    flux create kustomization flux-system --source=GitRepository/flux-system --path="./clusters/local" --prune=true --interval=1m 
+    flux create kustomization flux-system --source=`GitRepository`/flux-system --path="./clusters/local" --prune=true --interval=1m 
     ```
-4. Check k9s/lens/kubectl for success:
+1. Check k9s/lens/kubectl for success:
     
     ![K9s showing successful deployment](docs/k9s-reconcile-success.png)
 
 For documentation how cluster templates, components and sub components work, follow the README.md chains down the directories. 
 For example, start in `./clusters/local/README.md` and follow the links from there.
+
+## Change Promotion
+
+Change promotion is a difficult concept to tackle; you want to retain enough flexibility to play with potential changes you wish - with the caveat there needs to be a clear path to getting it to production should the change be beneficial.
+
+![promotion](docs/gitops-promotion.drawio.svg)
