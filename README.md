@@ -18,7 +18,6 @@ The rationale for attempting this workflow can be broadly split up into the foll
 * **Audit of changes** - since you're using merge requests, there's an audit log in the git repository of changes made, when and by whom, with who approved them.
 * **Disaster recovery** - take the above and the realisation you can bootstrap any new cluster provisioned into the state of an existing cluster - useful for cloning test environments as much as bringing up a production environment.
 
-
 ## Bootstrapping
 
 > **NOTE**: _If you're deploying an existing cluster template, you can skip to [deployment](#deploy-existing-cluster-template)._
@@ -55,8 +54,7 @@ While not strictly related to this repository it's worth having a reference impl
 1. Have WSL2 installed and confirmed working, do first login etc.
 1. Have Docker Desktop installed, and confirm the `docker ps` command is working correctly from a WSL shell session.
 1. Enable the kubernetes service option in Docker Desktop settings.
-    
-    ![docker-desktop-windows](docs/windows-docker-desktop.png)
+   ![docker-desktop-windows](docs/windows-docker-desktop.png)
 
 ### Docker Desktop - MacOS
 
@@ -64,15 +62,14 @@ While not strictly related to this repository it's worth having a reference impl
 
 1. Have Docker Desktop installed, with a confirmation `docker ps` command is working correctly in the MacOS terminal session.
 1. Enable the VirtIO option on storage, the default option is extremely slow for host mounted volumes (applies more to docker than kubernetes but solid advice regardless).
-    ![virtio](docs/macos-docker-desktop-general.png)
+   ![virtio](docs/macos-docker-desktop-general.png)
 1. Enable the kubernetes service option in Docker Desktop settings.
-    ![docker-desktop-macos](docs/macos-docker-desktop-kubernetes.png)
+   ![docker-desktop-macos](docs/macos-docker-desktop-kubernetes.png)
 1. Configure the VM resources for Docker/Kubernetes.
-    ![resources](docs/macos-docker-desktop-resources.png)
-
-    * In this example there's 32GB of system ram to play with, I appreciate that'll be rare, but try to at least provision 10GB. 
-    * Storage should also be set to a decent percentage of your host disk space, if only because a lot of these projects move larger files around persistent and ephemeral volumes.
-    * More CPU cores is better, but total-2 is a decent starting point so your host remains responsive.
+   ![resources](docs/macos-docker-desktop-resources.png)
+   * In this example there's 32GB of system ram to play with, I appreciate that'll be rare, but try to at least provision 10GB. 
+   * Storage should also be set to a decent percentage of your host disk space, if only because a lot of these projects move larger files around persistent and ephemeral volumes.
+    More CPU cores is better, but total-2 is a decent starting point so your host remains responsive.
 
 ### Deploy Existing Cluster Template
 
@@ -82,9 +79,11 @@ To deploy an existing cluster template you need to add a `GitRepository` object 
 
 1. Add the FluxCD controllers to the cluster:
     > **NOTE**: _If you do not specify a cluster context, it'll use the default - but it's best to be explicit. Using `docker-desktop` as the example._
+
     ```shell
     flux install --context=docker-desktop
     ```
+
 1. Adding a git repository to the FluxCD controller:
     > **NOTE**: _This command will echo an SSH public key string to the terminal, it needs to be added to the repository [deploy keys](https://gitlab.com/***REMOVED***/fluxcd-testbed/-/settings/repository#js-deploy-keys-settings)._
 
@@ -93,12 +92,14 @@ To deploy an existing cluster template you need to add a `GitRepository` object 
     ```
 
 1. Bootstrapping this cluster against a predefined template:
-    ```
-    flux create kustomization flux-system --source=`GitRepository`/flux-system --path="./clusters/local" --prune=true --interval=1m 
-    ```
+
+   ```shell
+   flux create kustomization flux-system --source=`GitRepository`/flux-system --path="./clusters/local" --prune=true --interval=1m 
+   ```
+
 1. Check k9s/lens/kubectl for success:
-    
-    ![K9s showing successful deployment](docs/k9s-reconcile-success.png)
+
+   ![K9s showing successful deployment](docs/k9s-reconcile-success.png)
 
 For documentation how cluster templates, components and sub components work, follow the README.md chains down the directories. 
 For example, start in `./clusters/local/README.md` and follow the links from there.
