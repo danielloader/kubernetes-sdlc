@@ -11,7 +11,7 @@ spec:
     branch: second-reorg
   secretRef:
     name: flux-system
-  url: https://gitlab.com/nominet/cyber/architecture-team/fluxcd-testbed.git
+  url: ssh://git@gitlab.com/nominet/cyber/architecture-team/fluxcd-testbed
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
