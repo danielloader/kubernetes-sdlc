@@ -15,7 +15,7 @@ spec:
     # include chart
     !/deploy/chart/
 ---
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: olm
