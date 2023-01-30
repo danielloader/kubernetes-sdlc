@@ -94,7 +94,7 @@ To deploy an existing cluster template you need to add a `GitRepository` object 
 1. Bootstrapping this cluster against a predefined template:
 
    ```shell
-   flux create kustomization flux-system --source=`GitRepository`/flux-system --path="./clusters/local" --prune=true --interval=1m 
+   flux create kustomization flux-system --source="GitRepository/flux-system" --path="./clusters/local" --prune=true --interval=1m 
    ```
 
 1. Check k9s/lens/kubectl for success:
