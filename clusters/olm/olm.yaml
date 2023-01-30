@@ -9,16 +9,25 @@ spec:
   ref:
     semver: ">= v0.23.1"
   url: https://github.com/operator-framework/operator-lifecycle-manager.git
+  ignore: |
+    # exclude all
+    /*
+    # include chart
+    !/deploy/chart/
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
+kind: HelmRelease
 metadata:
   name: olm
   namespace: flux-system
 spec:
-  interval: 10m0s
-  path: ./deploy/chart
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: olm
+  interval: 1m0s
+  chart:
+    spec:
+      chart: ./deploy/chart/
+      sourceRef:
+        kind: GitRepository
+        name: olm
+        namespace: flux-system
+      interval: 1m
+      reconcileStrategy: Revision
