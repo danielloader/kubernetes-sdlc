@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: my-tf-controller
+  namespace: operators
+spec:
+  channel: stable
+  name: tf-controller
+  source: operatorhubio-catalog
+  sourceNamespace: olm
