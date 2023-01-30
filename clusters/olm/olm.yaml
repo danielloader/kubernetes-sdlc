@@ -8,8 +8,6 @@ spec:
   interval: 1m0s
   ref:
     semver: ">= v0.23.1"
-  secretRef:
-    name: flux-system
   url: https://github.com/operator-framework/operator-lifecycle-manager.git
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
