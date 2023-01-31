@@ -1,0 +1,1 @@
+https://github.com/k0sproject/k0sctl#configuration-file
