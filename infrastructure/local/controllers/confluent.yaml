@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  targetNamespace: confluent-system
+  targetNamespace: operators
   chart:
     spec:
       chart: confluent-for-kubernetes
