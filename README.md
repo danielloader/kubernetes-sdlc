@@ -25,7 +25,7 @@ ArgoCD is the market leader as it currently stands but it suffers some shortcomi
 * It ships with a WebUI by default to attempt to make the whole process easier, though it detracts from the YAML driven source of truth model.
 * It is more suited as a glorified Helm frontend, think iOS app store for Kubernetes. 
 
-FluxCD v2 is a modular continuous deployment product with modularity, and an emphasis of YAML driven deployments.
+FluxCD v2 is a modular continuous deployment product with an emphasis of YAML driven deployments.
 
 * FluxCD can just deploy the bare minimum to get going; a source controller and helm controller.
 * It has an optional Web UI that is maturing quickly ([WeaveWorks GitOps](https://github.com/weaveworks/weave-gitops))
@@ -77,8 +77,8 @@ While not strictly related to this repository it's worth having a reference impl
 
 Here is a list of documented environments and how to set up a cluster:
 
-* [Docker Desktop](create/docker-desktop/README.md)
-* [EKS](create/eks/README.md)
+* [Docker Desktop](create/docker-desktop/README.md) - _Preferred option for local hosting._
+* [EKS](create/eks/README.md) - _Preferred option for cloud hosting._
 * [k0s](create/k0s/README.md)
 * [k3d](create/k3d/README.md)
 * [k3s](create/k3s/README.md)
@@ -100,22 +100,52 @@ This can be seen in [`gotk-sync.yaml`](clusters/development/flux-system/gotk-syn
 
 To get around this bootstrap paradox the CLI does this all simultaneously - both creating the objects that store the remote urls and config/secrets to pull from them, as well storing the resulting objects it pushes to the cluster in the source try and pushes them before the first reconciliation run starts.
 
-#### Example
+Once this is complete you need to create a `kustomization.yaml` file in the resulting cluster directory, this is effectively a symlink to the cluster-template.
+
+#### Working Example
 
 To create a new cluster template, for example `clusters/abc` with a different combination of services from the components in this repository, you need to use the `flux bootstrap` command.
 
-This also requires a personal access token from Gitlab so that it can insure the repository exists (it'll create it if it doesn't), and if it does can write commits into the tree into the `clusters/` directory. Remember to set the branch you wish to push this new cluster template into.
+This also requires a personal access token from Gitlab so that it can insure the repository exists (it'll create it if it doesn't), and if it does can write commits into the tree into the `clusters/` directory. In addition to creating/writing into a repository, the PAT will be used to create a deploy SSH key in the repository, and then submitted to the cluster as a secret to be used to authenticate the `GitRepository` flux object. 
+
+> **WARNING**: _Remember to set the branch you wish to push this new cluster template into, but you really should create the branch first prior as flux will not know which branch to base it from._
 
 ```bash
 export GITLAB_TOKEN= # put your personal access token here with api, read_api and read_repository access
 flux bootstrap gitlab --context=docker-desktop --owner=***REMOVED*** --repository=gitops-pull-experiment --branch=main --path=./clusters/abc
 ```
 
+By default this does the minimum to connect a git repository and a kubernetes cluster together, you still need to tell it which workloads to deploy. After the above process completes you will need to perform a git pull to get the committed changes represented in your local repository and create the above mentioned [`kustomization.yaml` file](https://kubectl.docs.kubernetes.io/references/kustomize/glossary/#kustomization).
+
+
+```yaml
+## ./clusters/abc/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- flux-system
+- ../../cluster-templates/development/
+```
+
+The key line is the final one; the first resource will always be `flux-system` as it points to the directory created by the bootstrapping tooling, but the next resource should be a link to the template directory this cluster should track changes from.
+
+All this will do is effectively operate like a symlink to a cluster template directory, and resolve those resources by proxy.
+
+> **NOTE**: _There might not be any value in using templates, it's entirely possible we can just define a production and development cluster in the `./clusters` directory and do a symlink kustomization layer to those existing, long lived clusters. Abstraction for abstractions sake is not as helpful as you might think._
+
+The result of the above process should be some `Kustomization` objects in your cluster. Hopefully resolving down to a ready state shown here via Lens.
+
+![successful bootstrap outcome](docs/successful-bootstrap.png)
+
 ### Development Deployments
 
-To deploy an existing cluster template you need to add a `GitRepository` object that contains a reference to the upstream source, and an initial bootstrapping Kustomization object, which is the parent object for child Kustomizations, HelmCharts and other kubernetes objects.
+Sometimes you just want to deploy what is currently defined in git without enforcing a 1:1 correlation between an existing cluster definition and your new local development kubernetes cluster. 
+
+To deploy an existing cluster template you need to add a `GitRepository` object that contains a reference to the upstream source, and an initial bootstrapping `Kustomization` object, which is the parent object for child Kustomizations, HelmCharts and other kubernetes objects.
 
 ![deployment of existing cluster template diagram](docs/gitops-deploy.drawio.svg)
+
+Steps 2 onwards represents the manual creation of the YAML that the bootstrap command would have committed and pushed to the repository in the `flux-system` directory in `./clusters/$ENVIRONMENT_NAME`
 
 1. Add the FluxCD controllers to the cluster:
     > **NOTE**: _If you do not specify a cluster context, it'll use the default - but it's best to be explicit. Using `docker-desktop` as the example._
@@ -125,19 +155,28 @@ To deploy an existing cluster template you need to add a `GitRepository` object 
     ```
 
 1. Adding a git repository to the FluxCD controller:
-    > **NOTE**: _This command will echo an SSH public key string to the terminal, it needs to be added to the repository [deploy keys](https://gitlab.com/***REMOVED***/fluxcd-testbed/-/settings/repository#js-deploy-keys-settings)._
 
-    ```shell
-    flux create source git flux-system --context=docker-desktop --url=ssh://git@gitlab.com/***REMOVED***/fluxcd-testbed.git --branch main
-    ```
+   #### Using an existing SSH key you already use to push to Gitlab
 
+   > **NOTE**: _This command will echo an SSH public key string to the terminal to add as a deploy key, you can ignore it as it is just the public side of your private personal SSH key._
+
+   ```shell
+   flux create source git flux-system --url=ssh://git@gitlab.com/***REMOVED***/gitops-pull-experiment --branch main --private-key-file=${HOME}/.ssh/***REMOVED***-gitlab
+   ```
+   #### Creating a deploy key on your behalf to add to the repository in Gitlab
+
+   > **NOTE**: _This command will echo an SSH public key string to the terminal, it needs to be added to the repository [deploy keys](https://gitlab.com/***REMOVED***/gitops-push-experiment/-/settings/repository#js-deploy-keys-settings)._
+
+   ```shell
+   flux create source git flux-system --url=ssh://git@gitlab.com/***REMOVED***/gitops-pull-experiment --branch main
+   ```
 1. Bootstrapping this cluster against a predefined template:
 
    ```shell
-   flux create kustomization flux-system --context=docker-desktop --source="GitRepository/flux-system" --path="./clusters/local" --prune=true --interval=1m 
+   flux create kustomization flux-system --context=docker-desktop --source="GitRepository/flux-system" --path="./clusters/development" --prune=true --interval=1m 
    ```
 
-1. Check k9s/lens/kubectl for success:
+1. Check the cluster for successful deployment (using k9s in this example):
 
    ![K9s showing successful deployment](docs/k9s-reconcile-success.png)
 
