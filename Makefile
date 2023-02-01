@@ -5,6 +5,6 @@ K := $(foreach exec,$(EXECUTABLES),\
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 build:
-	@for d in $(ROOT_DIR)/components/images/*/; do \
+	@for d in $(ROOT_DIR)/containers/*/; do \
 		docker build -t local/$$(basename $$d):latest $$d; \
 	done
