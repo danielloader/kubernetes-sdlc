@@ -108,7 +108,7 @@ This also requires a personal access token from Gitlab so that it can insure the
 
 ```bash
 export GITLAB_TOKEN= # put your personal access token here with api, read_api and read_repository access
-flux bootstrap gitlab --owner=nominet/cyber/architecture-team --repository=fluxcd-testbed --branch=main --path=./clusters/abc
+flux bootstrap gitlab --context=docker-desktop --owner=nominet/cyber/architecture-team --repository=gitops-pull-experiment --branch=main --path=./clusters/abc
 ```
 
 ### Development Deployments
