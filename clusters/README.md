@@ -1,5 +1,7 @@
 # Clusters
 
-Stuff inherits the basic cluster from `base` and then overrides anything that pertains to another environment, e.g. replicas and load balancer configuration.
+This directory is the source of truth, and represents a 1:1 link between a directory, and a kubernetes deployment.
 
-Base represents the bare minimum that can be deployed into a cohesive product offering. As such it's considered a unit of a cluster. 
+If you wish to create a new cluster deployment, follow the bootstrapping guide in [root level documentation link](../README.md)
+
+Please document the purpose, and the physical location of the cluster in each directory e.g. the cluster ARN for an EKS cluster.
