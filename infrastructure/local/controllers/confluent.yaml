@@ -1,0 +1,15 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: confluent
+  namespace: flux-system
+spec:
+  interval: 1m
+  targetNamespace: operators
+  chart:
+    spec:
+      chart: confluent-for-kubernetes
+      sourceRef:
+        kind: HelmRepository
+        name: confluent
+        namespace: flux-system

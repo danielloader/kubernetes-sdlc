@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: aws-creds
+  namespace: localstack
+stringData:
+  creds: |-
+    [default]
+    aws_access_key_id = test
+    aws_secret_access_key = test
+---
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: aws
+  namespace: localstack
+spec:
+  endpoint:
+    hostnameImmutable: true
+    url:
+      type: Static
+      static: "http://localstack-localstack.localstack:4566"
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: localstack
+      name: aws-creds
+      key: creds
