@@ -1,13 +1,9 @@
-# Kubernetes - Software & Platform Development Lifecycle
-
 ![planning rfc](https://img.shields.io/badge/status-draft%20rfc-informational)
 ![owner](https://img.shields.io/badge/owner-Daniel%20Loader-brightgreen)
 
-_This repository exists to explore, experiment with and report on findings with using FluxCD and a pull based GitOps workflow to enable a software development lifecycle oriented around containers and long lived kubernetes clusters and all the pitfalls found._
-
 [[_TOC_]]
 
-> **NOTE**: _High level goals and loose progress can be tracked against the [goals](GOALS.md) page._
+> **NOTE**: _High level goals and progress can be tracked against the [goals](GOALS.md) page._
 
 ## Concepts
 
