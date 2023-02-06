@@ -46,5 +46,6 @@ The pull based GitOps flow builds on the push based, and adds in technology that
 
 If you want to change the state of this system your only option is to change the git repository state. [^pull-escape-hatch]
 
-
 [^pull-escape-hatch]: You can just disable the controller enforcing the state in emergencies if you need to mutate production state, but if you are at that stage you are going to be triggering a chunky post-mortem meeting the next working day around why you had to. Use with care.
+
+Example
