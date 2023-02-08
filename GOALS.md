@@ -1,14 +1,14 @@
 # High Level Goals
 
 - [ ] Document high level concepts and shared best practices around this topic.
-    - [ ] GitOps - What is it?
-    - [ ] Pull vs Push GitOps methodologies.
+    - [x] GitOps - What is it?
+    - [x] Pull vs Push GitOps methodologies.
     - [ ] Kubernetes - What is it? What is it not? How does it fit into the GitOps ecosystem?
     - [ ] If not kubernetes, then what?
+- [ ] Kubernetes specific goals
     - [ ] Comparisons of tooling in this ecosystem.
     - [ ] Git repository layouts and their trade-offs.
     - [ ] FluxCD workflows - what does it achieve, how and what are the tangible outcomes?
-- [ ] Kubernetes specific goals
     - [ ] Increase the velocity of promoting changes between clusters.
     - [ ] Increase the confidence levels in proposed changes, thus reducing the cost of change.
     - [ ] Encourage using ephemeral clusters to experiment with newer versions of kubernetes, to be a canary deployment for upcoming changes.

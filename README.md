@@ -11,8 +11,6 @@ Before moving onto problem solving, it is a good idea to get all the readers of 
 
 ### GitOps
 
-#### What is it?
-
 GitOps in the simplest form is the concept of representing operations state in a git repository with the additional but essential concept that the git repository is the source of truth. 
 
 
@@ -26,7 +24,6 @@ In addition to broader concept of GitOps you have two competing methodologies fo
 
 * A push workflow where in changes are made to a repository and these changes are _pushed_ to resulting clusters to enforce state changes. Any manual changes made in between deployments is effectively overwritten on the next pipeline run, but not before.
 * A pull workflow where in these changes are stored in the repository but the responsibility on reading these changes and reconciling the state of the infrastructure to match the state of the repository is in the hands of the controllers in the infrastructure itself.
-
 
 #### Push Based GitOps
 ![gitops push high level diagram](docs/gitops-push.drawio.svg)
@@ -48,4 +45,23 @@ If you want to change the state of this system your only option is to change the
 
 [^pull-escape-hatch]: You can just disable the controller enforcing the state in emergencies if you need to mutate production state, but if you are at that stage you are going to be triggering a chunky post-mortem meeting the next working day around why you had to. Use with care.
 
-Example
+Which to use and when to swap between the two major methodologies up for debate - most companies will start with a pushed based methodology, simply because it emulates the flow of travel in existing CI/CD pipelines used for packaging and releasing code.
+
+### Kubernetes
+
+This section is not intended to explain what kubernetes is under the bonnet, even though you could concentrate the value proposition into two main points; an abstraction layer between application runtime and operating systems/hardware, a state reconciliation engine for your workloads.
+
+This section instead focuses on the business value the adoption of kubernetes is advertised to bring, and some painful lessons where it adds more friction than it is worth if you do not adopt it wholesale. 
+
+Runtime abstraction can be loosely redefined as portability - a concept that drove the initial adoption of C and Java decades ago. It has been a laudable goal since the second computer was ever made, how does one take the software engineering effort and reuse it on new hardware?
+
+Kubernetes is the latest in this nearly century old abstraction on abstraction race to the bottom.
+
+![kubernetes high level diagram](docs/kubernetes-layers.drawio.svg)
+
+In this diagram, kubernetes exerts influence in the red boxes, resting on a linux distribution in purple, itself resting on any abstraction of linux installations; bare metal, virtual machines, cloud instances, which ultimately exist somewhere as physical tin.
+
+The overarching selling point to the kubernetes dream is try to limit the cognitive load of the system:
+* Developers look after the blue boxes.
+* Platform team looks after the red area (and if you are lucky, a different platform team looks after the purple layer).
+* Another team looks after the grey layer; be it managed infrastructure like AWS, or an on premises server team who rack servers on your behalf.
