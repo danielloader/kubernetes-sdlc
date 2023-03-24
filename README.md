@@ -1,4 +1,4 @@
-![heading](docs/heading.drawio.svg){ width=100% }
+![heading](docs/heading.drawio.svg)
 
 ![planning rfc](https://img.shields.io/badge/status-draft%20rfc-informational)
 ![owner](https://img.shields.io/badge/owner-Daniel%20Loader-brightgreen)
