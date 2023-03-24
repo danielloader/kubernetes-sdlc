@@ -79,12 +79,9 @@ Here is a list of documented environments and how to set up a cluster:
 
 * [Docker Desktop](create/docker-desktop/README.md) - _Preferred option for local hosting._
 * [EKS](create/eks/README.md) - _Preferred option for cloud hosting._
-* [k0s](create/k0s/README.md)
-* [k3d](create/k3d/README.md)
-* [k3s](create/k3s/README.md)
 * [Kind](create/kind/README.md)
-* [minikube](create/minikube/README.md)
-* [rancher-desktop](create/rancher-desktop/README.md)
+
+Additional environments are documented in the `/create` directory, and feel free to add more if you can.
 
 ### Bootstrapping
 
