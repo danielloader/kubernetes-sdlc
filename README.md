@@ -108,7 +108,7 @@ Consider the following:
 
 * **Is your operations team familiar with operating kubernetes clusters?**
     
-    This one is a catch 22 situation. However you can run kubernetes in non production workloads to bootstrap the experience needed and the confidence built around the ecosystem to run it in production. This takes the shape of more than just reading pod logs with `kubectl` when a pod keeps `CrashLoopBackOff` looping. Understanding how the various parts of the ecosystem relate to each other, and an understanding of the data flow are important to being able to fix things that are not right. While kubernetes itself is a state reconciliation engine, ultimately a platform teams (and or developers on call) job is to the be the state enforcement loop around the existing one. 
+    This one is a catch 22 situation. However you can run kubernetes in non production workloads to bootstrap the experience needed and the confidence built around the ecosystem to run it in production. This takes the shape of more than just reading pod logs with `kubectl` when a pod keeps `CrashLoopBackOff` looping. Understanding how the various parts of the ecosystem relate to each other, and an understanding of the data flow are important to being able to fix things that are not right. While kubernetes itself is a state reconciliation engine, at the end of the day a platform teams (and or developers on call) job is to the be the state enforcement loop around the existing one - should all the automation fail, your job is to reset the system into a state where the usual reconciliation can continue. 
 
 * **Do you need to change the size of your workload regularly?**
 
@@ -139,7 +139,7 @@ Even if you answer all these questions in the direction that would naturally lea
 
     The original, and most adopted design pattern for ansible shuns a state reconciliation loop - instead adopting a "reconcile on push" model (also referred to as _agentless_). This is akin to the GitOps push model discussed earlier in this whitepaper. Ansible in this pattern has no capacity to detect drift in a configuration from the source of truth (the git repository) and instead relies on trying to correct the drift correction at the point the pipeline is triggered to deploy an updated ansible playbook.
 
-    Ansible operates at a lower level of abstraction than kubernetes, and you can deploy a kubernetes cluster itself with ansible - but the lack of constant state reconciliation makes this technology best suited to first run server bootstrapping, infrequently changed deployments and services, and the tooling is focused around configuring operating systems than running workloads.
+    Ansible operates at a lower level of abstraction than kubernetes, and you can deploy a kubernetes cluster itself with ansible - but the lack of constant state reconciliation makes this technology best suited to first run server bootstrapping, infrequently changed deployments and services, and the tooling is focused around configuring operating systems rather than running workloads.
 
     It is a common pattern to deploy workloads with ansible, but the runtime of the service itself is managed with Systemd or similar - a fire and forget deployment where native linux tooling is engaged with to try to ensure a service keeps running, and what to do when it fails.
 
