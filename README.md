@@ -394,9 +394,34 @@ To delete a cluster:
 ## Working Examples
 
 This repository contains working examples in addition to the whitepaper you are currently reading.
+
 ### Deployment
 
 To demo multi cluster workflows locally the best option you have is to use [kind](https://kind.sigs.k8s.io/) clusters.
 
 The only prerequisite is having access to a docker runtime and at least 8GB of memory assigned to the docker environment.
 
+1. Create the kind clusters:
+
+    ```shell
+    kind create cluster --config create/staging.yaml
+    kind create cluster --config create/production.yaml
+    ```
+
+1. Bootstrap the clusters with flux:
+
+    ```shell
+    flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/staging --context kind-staging
+    flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/production --context kind-production
+    ```
+
+1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
+
+### Clean up
+
+Since these clusters are local, with no external state being deployed you can safely delete the kind clusters without removing anything flux has provisioned:
+
+```shell
+kind delete cluster --name staging
+kind delete cluster --name production
+```
