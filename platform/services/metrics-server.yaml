@@ -40,7 +40,7 @@ spec:
             path: /spec/template/spec/containers/0/args/-
             value: --kubelet-insecure-tls
         target:
-          version: v1
+          version: apps/v1
           kind: Deployment
           name: metrics-server
           namespace: kube-system
