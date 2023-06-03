@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kyverno
+  labels:
+    toolkit.fluxcd.io/tenant: sre-team
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: kyverno
+  namespace: kyverno
+spec:
+  interval: 30m
+  url: https://kyverno.github.io/kyverno/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: kyverno
+  namespace: kyverno
+spec:
+  releaseName: kyverno
+  chart:
+    spec:
+      chart: kyverno
+      version: 2.7.4
+      sourceRef:
+        kind: HelmRepository
+        name: kyverno
+  interval: 1h0m0s
+  install:
+    remediation:
+      retries: 3
+  values:
+    resources: 
+      limits: 
+        memory: 2Gi 
+      requests: 
+        cpu: 200m 
+        memory: 1Gi 
+    initResources: 
+      limits: 
+        cpu: 100m 
+        memory: 256Mi 
+      requests: 
+        cpu: 10m 
+        memory: 64Mi 
+    replicaCount: 1
+    antiAffinity:
+      enable: true
+
