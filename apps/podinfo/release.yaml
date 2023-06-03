@@ -19,3 +19,4 @@ spec:
   releaseName: podinfo
   values:
     replicaCount: 1
+    resources: {}
