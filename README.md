@@ -411,6 +411,7 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
 1. Bootstrap the clusters with flux:
 
     ```shell
+    export GITLAB_TOKEN=<your personal access token with api and write_repo scoped roles>
     flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/staging --context kind-staging
     flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/production --context kind-production
     ```
