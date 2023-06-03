@@ -43,6 +43,5 @@ spec:
           version: apps/v1
           kind: Deployment
           name: metrics-server
-          namespace: kube-system
   values:
     replicas: 1
