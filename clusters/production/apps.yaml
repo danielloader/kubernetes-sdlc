@@ -17,11 +17,10 @@ spec:
     name: flux-system
     namespace: flux-system
   patches:
-    - patch:
-        target: 
+    - patch: |
+        - op: replace
+          path: /spec/values/replicaCount
+          value: 2
+      target: 
           kind: HelmRelease
           name: podinfo
-        patch: |
-          - op: replace
-            path: /spec/values/replicaCount
-            value: 2
