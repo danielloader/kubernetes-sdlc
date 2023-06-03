@@ -27,8 +27,8 @@ spec:
   install:
     remediation:
       retries: 3
-  postRenders:
-    kustomize:
+  postRenderers:
+  - kustomize:
       patches:
       # Patch to work on local insecure clusters
       - patch: |-
