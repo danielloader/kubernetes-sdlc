@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: podinfo
+  namespace: apps
+spec:
+  interval: 10m0s
+  path: ./apps/podinfo
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  patches:
+    patch: -
+      target: 
+        kind: HelmRelease
+        name: podinfo
+    - patch: |
+        - op: replace
+          path: /spec/values/replicaCount
+          value: 2
