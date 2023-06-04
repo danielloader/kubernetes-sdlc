@@ -1,4 +1,4 @@
-![heading](docs/heading.drawio.svg)
+# ![heading](docs/heading.drawio.svg)
 
 ![planning rfc](https://img.shields.io/badge/status-draft%20rfc-informational)
 ![owner](https://img.shields.io/badge/owner-Daniel%20Loader-brightgreen)
@@ -109,7 +109,7 @@ Consider the following:
 
 * **Is your software development lifecycle built around containers (and more recently [WASM](https://developer.okta.com/blog/2022/01/28/webassembly-on-kubernetes-with-rust) runtimes)?**
 
-    Failing to meet this requirement means you will not benefit at all by the adoption of a platform built around orchestrating containers. This may sound obvious but having your SDLC built around containers is more than slapping a Dockerfile in the project root and calling it a day. Development ideally happens in containers, testing almost definitely should happen in containers, and ultimately deployment has to work with containers - and not just use them but understand their limitations, what they can enable and the value add they bring to the situation.
+    Failing to meet this requirement means you will not benefit at all by the adoption of a platform built around orchestrating containers. This may sound obvious but having your software development lifecycle built around containers is more than slapping a Dockerfile in the project root and calling it a day. Development ideally happens in containers, testing almost definitely should happen in containers, and ultimately deployment has to work with containers - and not just use them but understand their limitations, what they can enable and the value add they bring to the situation.
 
 * **Is your operations team familiar with operating kubernetes clusters?**
 
@@ -180,11 +180,11 @@ Even if you answer all these questions in the direction that would naturally lea
 
     [Hashicorp Packer](https://www.packer.io/use-cases/automated-machine-images) is an interesting solution to the "I have something I want to run, how can I package it to run?". Essentially it is a scriptable build pipeline for creating virtual machine images; including cloud deployments like EC2 AMIs. It does not orchestrate, it does not deploy, it does not update your machine nor does it offer any state reconciliation - so why is it on the list?
 
-    It has been a model for a long time to create fixed function virtual machine images and deploy them to a cluster that runs VMs - and this pattern is loosely called a software appliance. All your state, all your update management, all your telemetry is configured at boot time on first deployment. The operating system itself is configured to try and maintain itself - automatic package upgrades, using docker or similar on the base OS to run applications, systemd to monitor and restart services in production. 
+    It has been a model for a long time to create fixed function virtual machine images and deploy them to a cluster that runs VMs - and this pattern is loosely called a software appliance. All your state, all your update management, all your telemetry is configured at boot time on first deployment. The operating system itself is configured to try and maintain itself - automatic package upgrades, using docker or similar on the base OS to run applications, systemd to monitor and restart services in production.
 
     It is an old model, but for some deployments this can make a lot of sense - it is the ultimate abstraction on hardware - you provide a virtualised hardware platform and run the images directly on it. As long as you can provide the CPU core count, memory and storage requirements for the appliance to run you should have a solid production deployment.
 
-    This model falls apart when you have horizontally scaled workloads that change frequently, or require coordination between dozens of types of applications loosely coupled to each other over the network - it suits monolithic applications. 
+    This model falls apart when you have horizontally scaled workloads that change frequently, or require coordination between dozens of types of applications loosely coupled to each other over the network - it suits monolithic applications.
 
 * **Cloud Provider Driven Serverless Computing**
 
@@ -243,7 +243,7 @@ Don't Repeat Yourself (DRY) is a contentious subject in any system that represen
 
 So with FluxCD v2 selected for the whitepaper, here's a high level view of how FluxCD works:
 
-![gitops pull workflow using fluxcd](docs/gitops-pull.drawio.svg)
+![gitops pull workflow using FluxCD](docs/gitops-pull.drawio.svg)
 
 The feedback loop described by the diagram above works as follows:
 
@@ -258,7 +258,7 @@ The rationale for adopting this workflow can be broadly split up into the follow
 * **Repeatability** - if you want multiple clusters to be in state sync they can all subscribe for changes from the same cluster. You can utilise a symlink in the `./clusters` directory to make the clusters all adhere to one state.
 * **Promotion of changes** - each cluster has a state, enshrined in git; if you want to promote a change it is a case of copying a file from one directory to another and committing the changes.
 * **Audit of changes** - since you're using merge requests there is an audit log in the git repository of changes made, when and by whom.
-* **Disaster recovery** - since your state is in code, failing over or rebuilding any environment is easie[^data-footnote]
+* **Disaster recovery** - since your state is in code, failing over or rebuilding any environment is easier. [^data-footnote]
 
 [^data-footnote]: This process copies the state of a cluster but not the persistent data - underlying persistent data stored in provisioned volumes needs to be treated the same as persistent data on any server - a backup process and restore process needs to be evaluated and tested outside of the infrastructure deployment and cluster deployment lifecycles.
 
@@ -280,7 +280,7 @@ As this design currently stands, it is a single branch model - you write changes
 
 Git does not offer a concept of directory based ACL, if someone can write to a repository they could write just as easily to a staging cluster as production.
 
-This might make production a relatively unsafe. See [Multiple Repository Pattern](#multiple-repository-pattern) for the trade offs of the opposing design.
+This might make production a relatively unsafe. See [Multiple Repository Pattern](#multirepository-pattern) for the trade offs of the opposing design.
 
 In the monorepo pattern changes are promoted as such:
 
@@ -370,7 +370,7 @@ Hopefully this will settle in due time as maturity takes hold in the design and 
 
 With the above in mind, it is apparent that the platform team will be likely at the forefront of the breaking changes and change cycles in a clusters lifecycle. You may even get to a point where application stacks on top of the cluster are quite stable, with very infrequent release schedules for their own internally derived roadmap. This in reality does not notably reduce the amount of releases a team must make, if only because they will have change thrust upon them from below - directly via kubernetes upgrades and indirectly via shared resources the applications require to run.
 
-### Exploratory Change Process
+#### Exploratory Change Process
 
 Aside from the minor and patch version bumping of helm charts in the service tier, the most common and disruptive task in the platform team would be upgrading the kubernetes control plane itself - at the time of writing the release cadence recently dropped from four releases a year to three, but that still means dealing with this every four months.
 
@@ -389,13 +389,14 @@ So now you have a grasp on some up coming changes, what next? Well you need to c
 1. Copy the cluster you wish to clone from in the `./clusters/` directory, to a new cluster.
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/staging/ ./clusters/sandbox-a`
+    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/staging/" "./clusters/sandbox-a"`
     ```
 
 1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to complete the reconciliation loop between source and cluster.
 
     ```shell
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/cluster-a
+    export GITLAB_TOKEN=<a personal access token with api and write_repo scopes>
+    flux bootstrap gitlab --token-auth --owner "***REMOVED***" --repository "fluxcd-demo" --path "./clusters/cluster-a"
     ```
 
 1. Make your changes to the platform helm charts and values.
@@ -403,7 +404,7 @@ So now you have a grasp on some up coming changes, what next? Well you need to c
 1. Copy the directory back to the source, omitting the `flux-system/gotk-sync.yaml` file.
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/sandbox-a/ ./clusters/staging`
+    rsync -av --exclude='*/gotk-sync.yaml' ."/clusters/sandbox-a/" "./clusters/staging"`
     ```
 
     > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
@@ -422,7 +423,7 @@ The notable difference is you aren't bringing your own infrastructure stacks to 
 1. Copy the `./clusters/development` directory to `./clusters/staging` again omitting the `flux-system/gotk-sync.yaml` file.
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/development/ ./clusters/staging`
+    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/development/" "./clusters/staging"`
     ```
 
 1. Save, commit and push the changes to the git repository.
@@ -438,21 +439,21 @@ Congratulations, as a development team your only concern is around the applicati
 
 **_NOTES FOR MONDAY_**
 
-- [ ] Cover helm release semver ranges; patch for production, minor for staging and major for development.
-- [ ] Cover image deployments.
-- [ ] Cover best practices and talk about 12 factor apps.
-- [ ] Emphasise loose decoupling of services, make assumptions the platform is providing things rather than provide them yourself. e.g. Confluent for Kubernetes operators.
-- [ ] Try to make your application namespace agnostic, and deploy _all_ the components in the same namespace for portability.
-- [ ] Trade-offs between helm charts and raw manifests installed via kustomize.
-- [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
-- [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
+* [ ] Cover helm release semver ranges; patch for production, minor for staging and major for development.
+* [ ] Cover image deployments.
+* [ ] Cover best practices and talk about 12 factor apps.
+* [ ] Emphasise loose decoupling of services, make assumptions the platform is providing things rather than provide them yourself. e.g. Confluent for Kubernetes operators.
+* [ ] Try to make your application namespace agnostic, and deploy _all_ the components in the same namespace for portability.
+* [ ] Trade-offs between helm charts and raw manifests installed via kustomize.
+* [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
+* [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
 
 ### Deleting a Cluster
 
 Since FluxCD is a reconciliation loop to retain state, you have two options to remove a cluster:
 
-- Delete the state bit by bit in the git repository and let FluxCD uninstall everything in the order you want it to go (service configurations before services which provide custom resource definitions and [finaliser](https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/) functions).
-- Suspend the reconciliation at the source and delete the objects in the cluster.
+* Delete the state bit by bit in the git repository and let FluxCD uninstall everything in the order you want it to go (service configurations before services which provide custom resource definitions and [finaliser](https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/) functions).
+* Suspend the reconciliation at the source and delete the objects in the cluster.
 
 The latter makes more sense when you are operating in a "main" only branch repository, as to make reverting commits easier.
 
@@ -464,7 +465,6 @@ The latter makes more sense when you are operating in a "main" only branch repos
 > **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helmcharts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
 >
 > _It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc)._
-
 
 ## Working Examples
 
