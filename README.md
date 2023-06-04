@@ -323,15 +323,17 @@ These models incur manpower costs, engineer time, but facilitate an arguably mor
 
 The trade-offs are open to debate because like all security postures, they are simply an evaluation of risk vs reward.
 
-#### Sandbox Environments
+### Sandbox Environments
 
-We have touched on these repeatedly before, but it is worth explaining why you would go the extremes of engineering to allow these to exist - after all lots of companies do not use them, nor ever find a reason to use them - so why would we?
+We have touched on these repeatedly before, but it is worth explaining why you would go the efforts of engineering to allow these to exist - after all lots of companies do not use them, nor ever find a reason to use them - so why would we?
 
-Regardless of a monorepo, or multirepo topology - you still want environments to propose working changes on - if not, you would be forced to push fresh untested changes into the bottom of the long lived environment stack (in our model, Development).
+Regardless of a monorepo, or multirepo topology - you still want environments to propose working changes on - the alternative would be forced to push fresh untested changes into the bottom of the long lived environment stack (in our model, Development).
 
-This methodology where the development environment is a constantly shifting sands of potentially broken infrastructure is an anti pattern. It prevents development being used for its primary objective - integration testing. Development is likely to be the first changes made by multiple teams, in their own isolated sprints and release schedules will interact with each other. With this in mind and as mentioned before about minimising moving parts in any given change - infrastructure should be the stable aspect in this situation, as to allow developers to find bugs and functional issues in their code without pointing their fingers at the environmental layer underneath.
+This methodology where the development environment is a constantly shifting foundation of potentially broken infrastructure is an **anti pattern**.
 
-In addition to facilitating an integration environment, you will want to be able to do performance tests.
+It prevents development being used for its primary objective - integration testing. Development is likely to be the first changes made by multiple teams, in their own isolated sprints and release schedules will interact with each other. With this in mind and as mentioned before about minimising moving parts in any given change - infrastructure should be the stable aspect in this situation, as to allow developers to find bugs and functional issues in their code without pointing their fingers at the environmental layer underneath.
+
+In addition to facilitating an integration environment, you will likely want to be able to do performance tests.
 
 It is important you conduct this test in such a way that yields full confidence of change to a production platform, and thus you can not escape the reality that you need to run performance tests in an environment as identical in topology and compute resource allocation as production - and that is expensive.
 
@@ -343,53 +345,126 @@ Given all the above you still need to perform occasional performance tests - thi
 
 The emphasis here is squarely on a short lived environment, though this could be measured in days or even a sprint due to the one hour overhead of deploying a new cluster. It should be possible from any given state to clone the cluster configuration (without persistent data - this is outside the scope of GitOps) and transplant it into a clone of the infrastructure, in this case a kubernetes cluster.
 
-To summarise; sandbox environments enable you to leave long running clusters isolated so they can be used for their intended developer purpose and make infrastructure or cluster configuration changes in throwaway sandbox environments. Additionally they also allow you to clone an expensive environment for a few hours of performance testing to increase confidence levels prior to the changes reaching production, or cloning production to try to replicate a production fault in the infrastructure (multi availability zone scheduling issues for example).
+To summarise; sandbox environments enable you to leave long running clusters isolated so they can be used for their intended purpose and make infrastructure and/or cluster configuration changes in sandbox environments.
+They also allow you to clone an expensive environment for a few hours of performance testing to increase confidence levels prior to the changes reaching production, or cloning production to try to replicate a production fault in the infrastructure (multi availability zone scheduling issues for example).
 
-#### Testing Sandbox Workflow
+### Gitops from a Platform Team Perspective
 
-To create a clone sandbox:
+At a high level the operational workflow of a platform team is different to a development team, as the platform conceptually is a single deployment - all the tools that make up the opinionated state of a platform deployment; storage controllers, load balancer controllers, policy enforcement controllers, etc will all end up on every cluster by definition.
 
-1. Copy a directory to a new directory.
-1. Deploy the kubernetes infrastructure needed (terraform etc).
-1. Run `flux bootstrap` on this branch, aimed the directory representing the cluster state you want to clone. e.g. bootstrap `./clusters/cluster-d`. This will override the existing `flux-system` configuration and tie this configuration to a new cluster.
+This also complicates matters, when it comes to promoting breaking changes or deprecating components as downstream consumers of your services need to be involved in such decisions and actions scheduled for those teams to adjust their deployments accordingly.
+
+![platform-as-a-service](docs/platform-as-a-service.drawio.svg)
+
+> **NOTE:** _While the application layer is out of scope, if you are making changes that you suspect will affect a development team you should deploy their application stacks onto your sandbox cluster to confirm a healthy state is achieved, and if not - tickets scheduled with the team warning them of upcoming changes that will incur work to be done._
+
+If you take this model, with everything resting on the kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will be as follows:
+
+1. Upstream kubernetes upgrades are mandated with a breaking change, often promotion of beta APIs to stable.
+1. Upstream helm charts that rely on those core APIs will also change and often take the opportunity to include breaking changes when their underlying APIs change.
+1. Applications deployed on the cluster will also need to take into account these changing APIs; e.g. kyverno policies, ALB service annotations, storage class changes.
+
+As you can see the changes at the bottom of the platform are often felt entirely through the stack, as is the nature of foundational changes. Often third parties will minimise the pain felt by such changes by abstracting the changes in the intermediate layers thereby leaving the application layer none the wiser about the changes below, but this is far from certain and with the operator/controller pattern being in its infancy in the kubernetes ecosystem there are often more breaking changes in the intermediate layers between the cluster control plane and the applications than the control plane itself.
+
+Hopefully this will settle in due time as maturity takes hold in the design and deployment cycles of the operators that applications leverage.
+
+With the above in mind, it is apparent that the platform team will be likely at the forefront of the breaking changes and change cycles in a clusters lifecycle. You may even get to a point where application stacks on top of the cluster are quite stable, with very infrequent release schedules for their own internally derived roadmap. This in reality does not notably reduce the amount of releases a team must make, if only because they will have change thrust upon them from below - directly via kubernetes upgrades and indirectly via shared resources the applications require to run.
+
+### Exploratory Change Process
+
+Aside from the minor and patch version bumping of helm charts in the service tier, the most common and disruptive task in the platform team would be upgrading the kubernetes control plane itself - at the time of writing the release cadence recently dropped from four releases a year to three, but that still means dealing with this every four months.
+
+The kubernetes control plane has a rolling window of supporting APIs, which in theory aids the migration and upgrade of clusters. Warnings on deprecation of APIs and object types are made well in advance with some lead times in the years. This leniency in fixing dependencies downstream of the control plane is only useful if you are able to keep on top of the deprecation warnings themselves.
+
+There are tools out there to pre-warn you of upcoming hard deprecations, and when you can expect your cluster state to fail if you upgrade the control plane without changes:
+
+1. [pluto](https://github.com/FairwindsOps/pluto) - _A cli tool to help discover deprecated apiVersions in Kubernetes_
+1. [kubent](https://github.com/doitintl/kube-no-trouble) - _Easily check your clusters for use of deprecated APIs_
+
+Both tools offer an overlapping venn diagram of features so evaluate both at the time of reading.
+
+So now you have a grasp on some up coming changes, what next? Well you need to create a cluster to try to mitigate these changes, usually with a newer control plane as to experiment with the breaking changes.
+
+1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in. e.g. kubernetes being bumped from 1.26 to 1.27.
+1. Copy the cluster you wish to clone from in the `./clusters/` directory, to a new cluster.
 
     ```shell
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/cluster-d
+    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/staging/ ./clusters/sandbox-a`
     ```
 
-1. The sandbox cluster reconciles and deploys the resources as defined in the copied directory.
+1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to complete the reconciliation loop between source and cluster.
 
-This workflow is primarily designed for testing tasks; such as performance testing, integration testing of new components prior to getting deployed to development. Though it can be used to prototype reconfiguration of any long lived environment.
+    ```shell
+    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/cluster-a
+    ```
 
-You may have noticed this workflow has no way to return a change back to the parent cluster - this is by design. Most tasks involving a new kubernetes cluster are short lived (weeks at most) instances to run disruptive tests that otherwise would cause issues for stream aligned teams from deploying work into the development, staging or production clusters.
+1. Make your changes to the platform helm charts and values.
+1. Run any validation and testing scripts you have accumulated over time, or manually test the cluster to be confident the changes haven't impacted the services.
+1. Copy the directory back to the source, omitting the `flux-system/gotk-sync.yaml` file.
 
-#### Platform Changes Sandbox Workflow
+    ```shell
+    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/sandbox-a/ ./clusters/staging`
+    ```
 
-The most common task to achieve in this workflow would be the upgrading of the underlying kubernetes cluster itself - doing so on development directly would leave the cluster in a broken state for stream aligned teams to continue their work, but platform teams still need to do the work - the solution is using a sandbox cluster.
+    > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
 
-The flow is much the same as the testing flow, with the caveat you would want to return the state changes upstream to the clone source. If you cloned from development (and you should as it is the furthest cluster away from development in the "always running" group) the action would be the reverse of the initial cloning.
+1. Monitor the change reconciliation and deployment on the parent cluster.
+1. If it goes well, delete the sandbox cluster directory, if not, revert the commit and revert the parent cluster state.
+    > **NOTE:** _At this point your changes to the cluster are internal, the version of kubernetes itself has not been changed thus far._
+1. Re-run the IAC that controls the parent cluster to bump the kubernetes cluster version. Everything should upgrade and settle down afterwards.
+1. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
 
-1. Follow creation steps above.
-1. Make the breaking changes you need to make:
-    * Upgrading the kubernetes control plane or node pools.
-    * Upgrading core and critical helm charts; cert-manager etc.
-    * Adding or removing core and critical services.
-1. When happy with the state, follow the destroy instructions above in much the same way as a testing cluster, after all the state is still stored in the git repository.
-1. Copy the changes to the source directory (sans `~/flux-system/gotk-sync.yaml` file as it's unique to the cluster/branch).
-1. Stage, commit and push the changes to the remote.
-1. Confirm the upstream parent cluster has now reconciled to the state you were happy with in the sandbox cluster.
-1. Delete the sandbox cluster directory and push the changes.
+The same loosely defined methodology would apply to migrating changes up the long lived cluster stack - from development, to staging to production.
 
-#### Deleting a Sandbox
+The notable difference is you aren't bringing your own infrastructure stacks to the party and you're essentially just copying the state FluxCD reconciles against up the directory tree.
 
-To delete a cluster:
+1. Once you're happy with development cluster state, both in the on cluster workloads defined by FluxCD and the kubernetes control plane versions it is time to promote the state up the chain.
+1. Copy the `./clusters/development` directory to `./clusters/staging` again omitting the `flux-system/gotk-sync.yaml` file.
 
-1. Suspend the root fluxcd entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
+    ```shell
+    rsync -av --exclude='*/gotk-sync.yaml' ./clusters/development/ ./clusters/staging`
+    ```
+
+1. Save, commit and push the changes to the git repository.
+1. Let the cluster reconcile a new state. If any issues arise it is best to tackle them now prior to any infrastructure as code changes. If you need to revert, now is the time to revert the git commit that copied the directory state across.
+1. Assuming the above steps are successful, run the upgrade in the infrastructure as code stack to bring the cluster control plane up to parity with the source cluster.
+1. Congratulations you've upgraded your long lived environment and propagated the changes to the next one.
+
+This process would follow the same path for changes being promoted from staging to production.
+
+### Gitops from a Development Team Perspective
+
+Congratulations, as a development team your only concern is around the application layer - and while that is not devoid of danger, it is however a lot fewer moving parts to worry about and the ones you do have to are somewhat in your gift to control and change.
+
+**_NOTES FOR MONDAY_**
+
+- [ ] Cover helm release semver ranges; patch for production, minor for staging and major for development.
+- [ ] Cover image deployments.
+- [ ] Cover best practices and talk about 12 factor apps.
+- [ ] Emphasise loose decoupling of services, make assumptions the platform is providing things rather than provide them yourself. e.g. Confluent for Kubernetes operators.
+- [ ] Try to make your application namespace agnostic, and deploy _all_ the components in the same namespace for portability.
+- [ ] Trade-offs between helm charts and raw manifests installed via kustomize.
+- [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
+- [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
+
+### Deleting a Cluster
+
+Since FluxCD is a reconciliation loop to retain state, you have two options to remove a cluster:
+
+- Delete the state bit by bit in the git repository and let FluxCD uninstall everything in the order you want it to go (service configurations before services which provide custom resource definitions and [finaliser](https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/) functions).
+- Suspend the reconciliation at the source and delete the objects in the cluster.
+
+The latter makes more sense when you are operating in a "main" only branch repository, as to make reverting commits easier.
+
+1. Suspend the root FluxCD entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
 1. Delete the application HelmReleases/Kustomization objects - this is to trigger the finalisers to clear down external resources; EBS volumes, ALB etc.
-1. Return the cluster to its freshly bootstrapped state sans any external state.
-1. Destroy the kubernetes cluster.
+1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
+1. Destroy the kubernetes cluster using the infrastructure as code that deployed it initially.
 
 > **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helmcharts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
+>
+> _It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc)._
+
 
 ## Working Examples
 
@@ -408,12 +483,12 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
     kind create cluster --config create/production.yaml
     ```
 
-1. Bootstrap the clusters with flux:
+1. Bootstrap the clusters with FluxCD:
 
     ```shell
     export GITLAB_TOKEN=<your personal access token with api and write_repo scoped roles>
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging --context kind-staging
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/production --context kind-production
+    flux bootstrap gitlab --context kind-staging --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging 
+    flux bootstrap gitlab --context kind-production --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/production 
     ```
 
 1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
