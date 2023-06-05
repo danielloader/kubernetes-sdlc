@@ -2,3 +2,5 @@ source/*
 !**/.gitkeep
 
 **/.venv
+
+.env
