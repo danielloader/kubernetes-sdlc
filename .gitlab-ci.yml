@@ -21,6 +21,7 @@ publish:
   before_script:
     - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
   script:
+    - set -x
     - flux push artifact oci://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${CI_PROJECT_NAME}:${CI_COMMIT_SHORT_SHA} \
       --path="./platform" \
       --source="${CI_REPOSITORY_URL}" \
