@@ -14,7 +14,7 @@ create-repository:
 
 publish:
   image:
-    name: fluxcd/flux-cli:v2.0.0-rc.3
+    name: fluxcd/flux-cli:v2.0.0-rc.5
     entrypoint: [""]
   needs:
     - create-repository
