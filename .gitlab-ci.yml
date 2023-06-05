@@ -1,29 +1,19 @@
-default:
-  tags:
-    - "kubernetes"
+variables:
+  AWS_ACCOUNT_ID: 676193640153
+  AWS_WEB_IDENTITY_TOKEN_FILE: "/tmp/web-identity-token"
+  AWS_ROLE_ARN: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/gitlab-runner-role"
+  AWS_DEFAULT_REGION: eu-west-1
 
-build-job:
-  stage: build
+publish:
+  image:
+    name: fluxcd/flux-cli
+    entrypoint: [""]
+  before_script:
+    - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
+    - aws ecr create-repository --repository-name ${CI_PROJECT_NAME} --region ${AWS_DEFAULT_REGION} || true
   script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
-
-test-job1:
-  stage: test
-  script:
-    - echo "This job tests something"
-    - sleep 60
-
-test-job2:
-  stage: test
-  script:
-    - echo "This job tests something, but takes more time than test-job1."
-    - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
-    - echo "which simulates a test that runs 20 seconds longer than test-job1"
-    - sleep 120
-
-deploy-prod:
-  stage: deploy
-  script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
-    - sleep 60
-  environment: production
+    - flux push artifact oci://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${CI_PROJECT_NAME}:${CI_COMMIT_SHORT_SHA} \
+      --path="./platform" \
+      --source="${CI_REPOSITORY_URL}" \
+      --revision="${CI_COMMIT_SHORT_SHA}@sha1:${CI_COMMIT_SHA}" \
+      --provider aws
