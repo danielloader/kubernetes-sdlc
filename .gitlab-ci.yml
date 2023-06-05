@@ -6,7 +6,7 @@ variables:
 
 publish:
   image:
-    name: fluxcd/flux-cli
+    name: fluxcd/flux-cli:v2.0.0-rc.5
     entrypoint: [""]
   before_script:
     - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
