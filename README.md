@@ -226,22 +226,27 @@ To help the reader understand what we are trying to build I have assembled these
 1. There is **a reason** to run _sandbox_ clusters that can clone from any cluster; for cost savings and transient use cases.
 1. There is **a reason** to have different application configurations in different environments; permits testing a single component in isolation with mocked services.
 1. There is **not a reason** to run different configurations of infrastructure on each cluster; there should be a baseline assumption all clusters will have the same underlying core resources available in every environment for operational overhead reductions.
+1. There is **a reason** to have additional platform and potentially optional components that aren't managed by application teams; Confluent platform, Elastic platform etc.
 
 This final assumption is a key point, the platform is a product or service in itself - too many permutations of this (even greater than one) becomes unwieldy to maintain. Consider the kubernetes platform a rough equivalent to a linux distribution with its opinionated defaults and services.
 
 ### Git Repository Structure
 
+> **SUMMARY:** There's no single solution for laying out git repositories, they all come with trade-offs. Pick the option that gives the most benefits at the current point in time, but be mindful changing retroactively is extremely painful in a production environment.
+>
+> With that in mind, I'd recommend the model described by FluxCD [here](https://fluxcd.io/flux/guides/repository-structure/#repo-per-team). With the platform team owning whole ownership over the clusters and each stream aligned team owning application repositories. It is a compromise balance between access control and separation of concerns.
+
 There are no prescribed way to lay out a GitOps workflow for kubernetes; this is partially because every business has their own physical topology and the directory topology should represent this rather than be opposed to it. Additionally the concept of directories in the state has no bearing on the cluster state, any directory layout is purely to aid the human cognitive load - you can (and should not) represent an entire kubernetes cluster in a single monolithic YAML document.
 
 With that in mind an attempt has been made to draw up a topology in this repository that represents a balance between flexibility and declarative rigidity.
 
-Don't Repeat Yourself (DRY) is a contentious subject in any system that represents state declaratively, be it Terraform or Kubernetes manifests. As such there is going to be a mix of duplication and inheritance in this project, representing an attempt to strike a balance. This will only be confirmed retroactively when you try to iron out pain points where in too much inheritance ties your hands on changes having too large of a blast radius, and too much duplication adding to the cognitive load and maintenance costs of running many environments.
+[Don't Repeat Yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) (DRY) is a contentious subject in any system that represents state declaratively, be it Terraform or Kubernetes manifests. As such there is going to be a mix of duplication and inheritance in this project, representing an attempt to strike a balance. This will only be confirmed retroactively when you try to iron out pain points where in too much inheritance ties your hands on changes having too large of a blast radius, and too much duplication adding to the cognitive load and maintenance costs of running many environments.
 
 ![repository structure high level diagram](docs/repository-directory-structure.drawio.svg)
 
 ### State Reconciliation
 
-So with FluxCD v2 selected for the whitepaper, here's a high level view of how FluxCD works:
+So with FluxCD v2 selected for the project, here's a high level view of how FluxCD works:
 
 ![gitops pull workflow using FluxCD](docs/gitops-pull.drawio.svg)
 
@@ -249,7 +254,7 @@ The feedback loop described by the diagram above works as follows:
 
 1. You make a change to a YAML file(s) and commit your changes and push them to a git repository.
 1. The fluxCD source controller periodically pulls the repository from git.
-1. The fluxCD kustomize and helm controllers run dry run applies looking for changes if the source commit hash changes.
+1. The fluxCD kustomize and helm controllers run dry run speculative applies looking for changes if the source commit hash changes.
 1. Any changes detected get reconciled with any sub-object in the cluster that the root controller controls.
 1. These reconciled states are now visible to the developer in their local IDE or kubernetes resource viewer _(k9s, lens etc)_.
 
@@ -261,6 +266,12 @@ The rationale for adopting this workflow can be broadly split up into the follow
 * **Disaster recovery** - since your state is in code, failing over or rebuilding any environment is easier. [^data-footnote]
 
 [^data-footnote]: This process copies the state of a cluster but not the persistent data - underlying persistent data stored in provisioned volumes needs to be treated the same as persistent data on any server - a backup process and restore process needs to be evaluated and tested outside of the infrastructure deployment and cluster deployment lifecycles.
+
+The tangible outcome here for teams is having a source of truth to point to and being reasonably confident that is the current state in the cluster with notifications of failure to reconcile states being other half of the process. If you push a broken chart and it fails to apply you need to know that it's failed to apply to know the state in the git repo is not the current state in the cluster.
+
+With this brings an improvement to the confidence levels on a change, if you know the clusters are at a steady known state and you make a change to one of them the confidence making the same changes to another is increased. This isn't because the changes became less risky, this is because the changes became more visible and repeatable - trying to remove manual steps and the human element to changes. Even if you make a bad change the fact it's tracked and visible to all allows easier attribution of cause to problems, easier control to revert to a working state. Increasing confidence levels and reducing risk in changes reduces the cost of change, and reducing the cost of change is the top priority in the vast majority of architectural designs - if only because business needs are constantly changing and the inability to change to meet them is loosely branded as technical debt.
+
+That in itself allows you to "move fast and break things" and embrace an _agile_ culture around your deliverables. Fear of breaking fragile infrastructure has hamstrung deployment cadence for as long as infrastructure has been needed.
 
 ### Cluster Configuration Change Promotion (Platform)
 
@@ -324,6 +335,13 @@ These models incur manpower costs, engineer time, but facilitate an arguably mor
 The trade-offs are open to debate because like all security postures, they are simply an evaluation of risk vs reward.
 
 ### Sandbox Environments
+
+> **SUMMARY:** Sandboxes encourage the following:
+>
+> * Cloning the state of an existing cluster.
+> * Doing provisional upgrades to the control plane and the core platform services.
+> * Allow you to run single user performance tests against known states of clusters.
+> * Give application teams an opinionated starting point for doing proof of concept work in a throw away repeatable manner that maps easily to downstream environments.
 
 We have touched on these repeatedly before, but it is worth explaining why you would go the efforts of engineering to allow these to exist - after all lots of companies do not use them, nor ever find a reason to use them - so why would we?
 
@@ -389,7 +407,7 @@ So now you have a grasp on some up coming changes, what next? Well you need to c
 1. Copy the cluster you wish to clone from in the `./clusters/` directory, to a new cluster.
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/staging/" "./clusters/sandbox-a"`
+    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/staging/" "./clusters/sandbox-a"
     ```
 
 1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to complete the reconciliation loop between source and cluster.
@@ -404,7 +422,7 @@ So now you have a grasp on some up coming changes, what next? Well you need to c
 1. Copy the directory back to the source, omitting the `flux-system/gotk-sync.yaml` file.
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' ."/clusters/sandbox-a/" "./clusters/staging"`
+    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/sandbox-a/" "./clusters/staging"
     ```
 
     > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
@@ -462,7 +480,7 @@ The latter makes more sense when you are operating in a "main" only branch repos
 1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
 1. Destroy the kubernetes cluster using the infrastructure as code that deployed it initially.
 
-> **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helmcharts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
+> **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
 >
 > _It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc)._
 

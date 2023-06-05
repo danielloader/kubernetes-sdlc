@@ -1,5 +1,12 @@
 {
     "cSpell.enableFiletypes": [
         "!yaml"
+    ],
+    "cSpell.words": [
+        "finaliser",
+        "finalisers",
+        "kustomization",
+        "kustomizations",
+        "kustomize"
     ]
 }
