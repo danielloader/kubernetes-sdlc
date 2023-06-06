@@ -3,7 +3,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
   name: platform
-  namespace: default
+  namespace: flux-system
 spec:
   secretRef:
     name: gitlab-registry
@@ -11,45 +11,44 @@ spec:
   url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
   ref:
     tag: main 
-
-# ---
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: platform-services
-#   namespace: flux-system
-# spec:
-#   interval: 10m0s
-#   path: ./platform/services
-#   prune: true
-#   sourceRef:
-#     kind: GitRepository
-#     name: flux-system
-# ---
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: platform-configs
-#   namespace: flux-system
-# spec:
-#   interval: 10m0s
-#   path: ./platform/configs
-#   prune: true
-#   sourceRef:
-#     kind: GitRepository
-#     name: flux-system
-# ---
-# apiVersion: kustomize.toolkit.fluxcd.io/v1
-# kind: Kustomization
-# metadata:
-#   name: platform-service-configs
-#   namespace: flux-system
-# spec:
-#   interval: 10m0s
-#   path: ./platform/service-configs
-#   prune: true
-#   sourceRef:
-#     kind: GitRepository
-#     name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: platform-services
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./platform/services
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: platform-configs
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./platform/configs
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: platform-service-configs
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./platform/service-configs
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
 
 
