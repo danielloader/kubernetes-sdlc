@@ -401,16 +401,130 @@ There are tools out there to pre-warn you of upcoming hard deprecations, and whe
 
 Both tools offer an overlapping venn diagram of features so evaluate both at the time of reading.
 
-So now you have a grasp on some up coming changes, what next? Well you need to create a cluster to try to mitigate these changes, usually with a newer control plane as to experiment with the breaking changes.
+So now you have a grasp on some up coming changes, what's next? Well you need to create a cluster to try to mitigate these changes, usually with a newer control plane as to experiment with the breaking changes.
+
+Before making changes to a cluster it is worth talking about the differences between an OCI artifact and a git repository souce; the former providers stability and strong versioning guarantees and the latter allows you to free form track a state in a git repository - be it the main branch or any other.
+
+Long lived stable clusters **must** track against OCI artifacts:
+
+Let's take this example below of `./clusters/production/flux-system/platform.yaml` and examine the behaviour the resulting configuration would have in the host cluster.
+
+```yaml
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: platform
+  namespace: flux-system
+spec:
+  secretRef:
+    name: gitlab-registry
+  interval: 1m0s
+  url: oci://registry.gitlab.com/***REMOVED***/fluxcd-demo
+  ref:
+    semver: 0.0.x 
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: platform-services
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./platform/services
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: platform
+```
+
+In this configuration the `./clusters/production/flux-system/platform.yaml` file is tracking OCI artifacts produced in a pipeline - they're versioned by tag. Additionally there is [semver](https://semver.org/) tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period.
+
+If you push a `0.0.3` tagged OCI artifact, and `0.0.2` is currently running in the cluster, then the rules above would download the 0.0.3 artifact and trigger reconciliation on the downstream dependencies that use this OCIRepository source.
+
+The constraints on this behaviour are defined in the `.spec.ref.semver` value, and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) ruleset.
+
+Recommendations to lean into semver in a useful way for versioning and distribution of your platform stack:
+
+* **Production tracks patch versions only**, e.g. `1.2.x`
+
+    Useful for minor changes automatically being propagated out to production.
+* **Staging tracks minor versions only**, e.g. `1.x.x`
+
+    Not expecting breaking changes but functionality changes that need evaluating prior to production.
+* **Development tracks the same as staging**, e.g. `1.x.x`
+
+    Additionally you could track major changes depending on maturity of the platform stack and appetite for risk e.g. `x.x.x`.
+
+Production can of course just a static tag either by specifying the full semver alias in the `.spec.ref.semver` value, or by using an OCI release tag using the `.spec.ref.tag` value.
+
+Sandboxes depending on their intended use cases will track differently:
+
+* **Performance test against a long lived named environment**
+
+    You would track the same semver or tag version as the source environment/cluster when cloning an environment, e.g. no change to the repository object.
+* **Platform team doing routine maintenance on downstream helm charts**
+
+    You would likely want to track against the latest semver version and tag your change in the platform repository to trigger a new package being deployed and tested.
+* **Platform team doing a control plane upgrade**
+
+    In this scenario with all else being equal you would just clone development and run the control plane upgrade, confirm it is working with the same platform components as development and then mainline the changes back to the development cluster.
+* **Platform team deprecating/adding major service components**
+
+    Given this is the most invasive of the changes a platform team is likely to make it makes sense to stop tracking OCIRepository and instead tracking against a GitRepository
+
+    ```yaml
+    ---
+    apiVersion: source.toolkit.fluxcd.io/v1
+    kind: GitRepository
+    metadata:
+    name: platform
+    namespace: flux-system
+    spec:
+    interval: 1m0s
+    ref:
+        branch: main
+    secretRef:
+        name: flux-system
+    url: https://gitlab.com/***REMOVED***/fluxcd-demo.git
+    ```
+
+    Additionally to adding this GitRepository object, you would need to change the references in your Kustomization objects:
+
+    ```yaml
+    apiVersion: kustomize.toolkit.fluxcd.io/v1
+    kind: Kustomization
+    metadata:
+    name: platform-services
+    namespace: flux-system
+    spec:
+    interval: 10m0s
+    path: ./platform/services
+    prune: true
+    sourceRef:
+        {- kind: OCIRepository -}
+        {+ kind: GitRepository -}
+        name: platform
+    ```
+
+---
 
 1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in. e.g. kubernetes being bumped from 1.26 to 1.27.
+1. Provide some OCI secrets to access helm charts and other manifests from a OCI registry: [^registry-creds]
+
+    [^registry-creds]:  You may want to include this in the terraform state using a gitlab provider to provision some credentials in the cluster creation state but it isn't essential to do so.
+
+    ```shell
+    kubectl create secret docker-registry gitlab-registry --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
+    ```
+
 1. Copy the cluster you wish to clone from in the `./clusters/` directory, to a new cluster.
 
     ```shell
     rsync -av --exclude='*/gotk-sync.yaml' "./clusters/staging/" "./clusters/sandbox-a"
     ```
 
-1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to complete the reconciliation loop between source and cluster.
+1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
 
     ```shell
     export GITLAB_TOKEN=<a personal access token with api and write_repo scopes>
@@ -512,7 +626,7 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
 1. Add Gitlab Container Registry secret to the flux-system namespace:
 
     ```shell
-    kubectl create secret docker-registry gitlab-registry --docker-server=registry.gitlab.com --docker-username=<gitlab login email address> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
+    kubectl create secret docker-registry gitlab-registry --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
     ```
 
 1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
