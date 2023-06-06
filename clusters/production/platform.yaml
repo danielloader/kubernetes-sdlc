@@ -1,3 +1,17 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: platform
+  namespace: default
+spec:
+  secretRef:
+    name: gitlab-registry
+  interval: 5m0s
+  url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
+  ref:
+    tag: main 
+
 # ---
 # apiVersion: kustomize.toolkit.fluxcd.io/v1
 # kind: Kustomization
