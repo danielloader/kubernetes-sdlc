@@ -15,7 +15,7 @@
 build:
   image:
     name: fluxcd/flux-cli:v2.0.0-rc.5
-    entrypoint: ["/bin/sh"]
+    entrypoint: ["sh"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   # needs:
