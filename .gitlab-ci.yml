@@ -15,4 +15,5 @@ build:
       --path="./platform" \
       --source="${CI_REPOSITORY_URL}" \
       --revision="${CI_COMMIT_BRANCH}@sha1:${CI_COMMIT_SHA}" \
-      --provider=generic
+      --provider=generic \ 
+      --ignore-paths='*,!platform/' 
