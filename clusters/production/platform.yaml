@@ -8,7 +8,7 @@ spec:
   secretRef:
     name: gitlab-registry
   interval: 1m0s
-  url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
+  url: oci://ghrc.io/danielloader/fluxcd-demo
   ref:
     semver: 0.0.x 
 ---
