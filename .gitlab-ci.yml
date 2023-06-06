@@ -2,10 +2,9 @@ build:
   image:
     name: fluxcd/flux-cli:v2.0.0-rc.5
     entrypoint: [""]
-  variables:
-    IMAGE_TAG: ${CI_COMMIT_TAG:-"$CI_COMMIT_SHORT_SHA"}
   script:
     - set -x
+    - IMAGE_TAG=${CI_COMMIT_TAG:-"$CI_COMMIT_SHORT_SHA"}
     - |
       flux push artifact oci://$CI_REGISTRY_IMAGE:$IMAGE_TAG \
       --creds="$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD" \
