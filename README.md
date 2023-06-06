@@ -509,6 +509,12 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
     flux bootstrap gitlab --context kind-production --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/production 
     ```
 
+1. Add Gitlab Container Registry secret to the flux-system namespace:
+
+    ```shell
+    kubectl create secret docker-registry gitlab-registry --docker-server=registry.gitlab.com --docker-username=<gitlab login email address> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
+    ```
+
 1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
 
 ### Clean up
