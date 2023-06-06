@@ -336,7 +336,7 @@ The trade-offs are open to debate because like all security postures, they are s
 
 ### Sandbox Environments
 
-> **SUMMARY:** Sandboxes encourage the following:
+> **_SUMMARY_:** Sandboxes encourage the following:
 >
 > * Cloning the state of an existing cluster.
 > * Doing provisional upgrades to the control plane and the core platform services.
@@ -388,8 +388,6 @@ Hopefully this will settle in due time as maturity takes hold in the design and 
 
 With the above in mind, it is apparent that the platform team will be likely at the forefront of the breaking changes and change cycles in a clusters lifecycle. You may even get to a point where application stacks on top of the cluster are quite stable, with very infrequent release schedules for their own internally derived roadmap. This in reality does not notably reduce the amount of releases a team must make, if only because they will have change thrust upon them from below - directly via kubernetes upgrades and indirectly via shared resources the applications require to run.
 
-#### Exploratory Change Process
-
 Aside from the minor and patch version bumping of helm charts in the service tier, the most common and disruptive task in the platform team would be upgrading the kubernetes control plane itself - at the time of writing the release cadence recently dropped from four releases a year to three, but that still means dealing with this every four months.
 
 The kubernetes control plane has a rolling window of supporting APIs, which in theory aids the migration and upgrade of clusters. Warnings on deprecation of APIs and object types are made well in advance with some lead times in the years. This leniency in fixing dependencies downstream of the control plane is only useful if you are able to keep on top of the deprecation warnings themselves.
@@ -401,13 +399,15 @@ There are tools out there to pre-warn you of upcoming hard deprecations, and whe
 
 Both tools offer an overlapping venn diagram of features so evaluate both at the time of reading.
 
+#### Source of Truth
+
 So now you have a grasp on some up coming changes, what's next? Well you need to create a cluster to try to mitigate these changes, usually with a newer control plane as to experiment with the breaking changes.
 
-Before making changes to a cluster it is worth talking about the differences between an OCI artifact and a git repository souce; the former providers stability and strong versioning guarantees and the latter allows you to free form track a state in a git repository - be it the main branch or any other.
+Before making changes to a cluster it is worth talking about the differences between an OCIRepository and a GitRepository source; the former provides stability and strong versioning guarantees and the latter allows you to free form track a state in a git repository via any valid git reference.
 
-Long lived stable clusters **must** track against OCI artifacts:
+> **NOTE:** _Long lived stable clusters **should** track against OCI artifacts. The exception to the rule would be a canary cluster that is just representing the state of `main` branches across the stacks to give you an oversight into the health of the system without any users suffering broken environments._
 
-Let's take this example below of `./clusters/production/flux-system/platform.yaml` and examine the behaviour the resulting configuration would have in the host cluster.
+Taking the example below of `./clusters/production/flux-system/platform.yaml` the behaviour the resulting configuration would have in the host cluster:
 
 ```yaml
 ---
@@ -418,7 +418,7 @@ metadata:
   namespace: flux-system
 spec:
   secretRef:
-    name: gitlab-registry
+    name: platform-repository
   interval: 1m0s
   url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
   ref:
@@ -438,87 +438,84 @@ spec:
     name: platform
 ```
 
-In this configuration the `./clusters/production/flux-system/platform.yaml` file is tracking OCI artifacts produced in a pipeline - they're versioned by tag. Additionally there is [semver](https://semver.org/) tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period.
+In this configuration the [`./clusters/production/flux-system/platform.yaml`](clusters/production/flux-system/platform.yaml) file is tracking OCI artifacts produced in a pipeline - they're versioned by tag. Additionally there is [semver](https://semver.org/) version tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period. [^semver-tracking] The constraints on this behaviour are defined in the `.spec.ref.semver` value and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) rule set. Here are some starting point recommendations for long running clusters:
 
-If you push a `0.0.3` tagged OCI artifact, and `0.0.2` is currently running in the cluster, then the rules above would download the 0.0.3 artifact and trigger reconciliation on the downstream dependencies that use this OCIRepository source.
+[^semver-tracking]: If you push a `0.0.3` tagged OCI artifact, and `0.0.2` is currently running in the cluster, then the rules above would download the `0.0.3` artifact and trigger reconciliation on the downstream dependencies that use this OCIRepository source.
 
-The constraints on this behaviour are defined in the `.spec.ref.semver` value, and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) ruleset.
+**Production tracks patch versions only**: e.g. `1.2.x` - Useful for minor changes automatically being propagated out to production.
 
-Recommendations to lean into semver in a useful way for versioning and distribution of your platform stack:
+**Staging tracks minor versions only**: e.g. `1.x.x` - Not expecting breaking changes but functionality changes that need evaluating prior to production.
 
-* **Production tracks patch versions only**, e.g. `1.2.x`
-
-    Useful for minor changes automatically being propagated out to production.
-* **Staging tracks minor versions only**, e.g. `1.x.x`
-
-    Not expecting breaking changes but functionality changes that need evaluating prior to production.
-* **Development tracks the same as staging**, e.g. `1.x.x`
-
-    Additionally you could track major changes depending on maturity of the platform stack and appetite for risk e.g. `x.x.x`.
+**Development tracks the same as staging**: e.g. `1.x.x` Additionally you could track major changes depending on maturity of the platform stack and appetite for risk e.g. `x.x.x`.
 
 Production can of course just a static tag either by specifying the full semver alias in the `.spec.ref.semver` value, or by using an OCI release tag using the `.spec.ref.tag` value.
 
 Sandboxes depending on their intended use cases will track differently:
 
-* **Performance test against a long lived named environment**
+**Performance test against a long lived named environment clone** - You would track the same semver or tag version as the source environment/cluster when cloning an environment, e.g. no change to the repository object.
 
-    You would track the same semver or tag version as the source environment/cluster when cloning an environment, e.g. no change to the repository object.
-* **Platform team doing routine maintenance on downstream helm charts**
+**Platform team changing the control plane version or the platform services configuration and charts** - In this scenario the best starting point would be cloning off the furthest environment away from production in the long lived group (usually development), as this is the version your changes would need to be applied to promote them on the journey to production.
 
-    You would likely want to track against the latest semver version and tag your change in the platform repository to trigger a new package being deployed and tested.
-* **Platform team doing a control plane upgrade**
+![sandbox promotion](docs/change-promotion-platform-a.drawio.svg)
 
-    In this scenario with all else being equal you would just clone development and run the control plane upgrade, confirm it is working with the same platform components as development and then mainline the changes back to the development cluster.
-* **Platform team deprecating/adding major service components**
+![sandbox promotion](docs/change-promotion-platform-b.drawio.svg)
 
-    Given this is the most invasive of the changes a platform team is likely to make it makes sense to stop tracking OCIRepository and instead tracking against a GitRepository
+![sandbox promotion](docs/change-promotion-platform-c.drawio.svg)
 
-    ```yaml
-    ---
-    apiVersion: source.toolkit.fluxcd.io/v1
-    kind: GitRepository
-    metadata:
-    name: platform
-    namespace: flux-system
-    spec:
-    interval: 1m0s
-    ref:
-        branch: main
-    secretRef:
-        name: flux-system
-    url: https://gitlab.com/nominet/cyber/architecture-team/fluxcd-demo.git
-    ```
+**Platform team deprecating/adding major service components** - Given this is the most invasive of the changes a platform team is likely to make it makes sense to stop tracking OCIRepository and instead tracking against a GitRepository.
 
-    Additionally to adding this GitRepository object, you would need to change the references in your Kustomization objects:
-
-    ```yaml
-    apiVersion: kustomize.toolkit.fluxcd.io/v1
-    kind: Kustomization
-    metadata:
-    name: platform-services
-    namespace: flux-system
-    spec:
-    interval: 10m0s
-    path: ./platform/services
-    prune: true
-    sourceRef:
-        {- kind: OCIRepository -}
-        {+ kind: GitRepository -}
-        name: platform
-    ```
-
+```diff
 ---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+name: platform
+namespace: flux-system
+spec:
+interval: 1m0s
+ref:
+- branch: main
++ branch: your-experimental-branch
+secretRef:
+  name: platform-repository
+url: https://gitlab.com/nominet/cyber/architecture-team/fluxcd-demo.git
+```
+
+Additionally to adding this GitRepository object, you would need to change the references in your Kustomization objects:
+
+```diff
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+name: platform-services
+namespace: flux-system
+spec:
+interval: 10m0s
+path: ./platform/services
+prune: true
+sourceRef:
+- kind: OCIRepository 
++ kind: GitRepository 
+  name: platform
+```
+
+Now that your repository for collecting the artifacts is set up there is a relatively simple process for change control:
 
 1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in. e.g. kubernetes being bumped from 1.26 to 1.27.
-1. Provide some OCI secrets to access helm charts and other manifests from a OCI registry: [^registry-creds]
+1. Provide some repository secrets to access helm charts and other manifests from a registry: [^registry-creds]
 
     [^registry-creds]:  You may want to include this in the terraform state using a gitlab provider to provision some credentials in the cluster creation state but it isn't essential to do so.
 
     ```shell
-    kubectl create secret docker-registry gitlab-registry --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
+    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
     ```
 
-1. Copy the cluster you wish to clone from in the `./clusters/` directory, to a new cluster.
+    ```shell
+    kubectl create secret generic platform-repository --set-literal=username=git --set-literal=password=$GITLAB_TOKEN --namespace flux-system
+    ```
+
+1. Copy the cluster you wish to clone from in the [`./clusters/`](clusters/) directory, to a new cluster.
 
     ```shell
     rsync -av --exclude='*/gotk-sync.yaml' "./clusters/staging/" "./clusters/sandbox-a"
@@ -552,7 +549,7 @@ The same loosely defined methodology would apply to migrating changes up the lon
 The notable difference is you aren't bringing your own infrastructure stacks to the party and you're essentially just copying the state FluxCD reconciles against up the directory tree.
 
 1. Once you're happy with development cluster state, both in the on cluster workloads defined by FluxCD and the kubernetes control plane versions it is time to promote the state up the chain.
-1. Copy the `./clusters/development` directory to `./clusters/staging` again omitting the `flux-system/gotk-sync.yaml` file.
+1. Copy the [`./clusters/development`](clusters/development) directory to [`./clusters/staging`](clusters/development) again omitting the `flux-system/gotk-sync.yaml` file.
 
     ```shell
     rsync -av --exclude='*/gotk-sync.yaml' "./clusters/development/" "./clusters/staging"`
