@@ -25,7 +25,20 @@ build:
   script:
     - set -x
     - |
-      docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+      AUTH=$(echo "$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD" | base64)
+
+      mkdir -p $HOME/.docker
+
+      cat << EOF > $HOME/.docker/config.json
+      {
+        "auths": {
+          "$CI_REGISTRY": {
+            "auth": "$AUTH"
+          }
+        }
+      }
+      EOF
+    - |
       flux push artifact oci://$IMAGE_TAG \
       --path="./platform" \
       --source="${CI_REPOSITORY_URL}" \
