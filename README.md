@@ -1,9 +1,30 @@
-# ![heading](docs/heading.drawio.svg)
+# Kubernetes and You
+**A journey into making the most of the tooling**
 
-![planning rfc](https://img.shields.io/badge/status-draft%20rfc-informational)
-![owner](https://img.shields.io/badge/owner-Daniel%20Loader-brightgreen)
+This repository exists to store a working proof of concept and notes around how to handle change management as a platform team around kubernetes clusters.
 
-[[_TOC_]]
+- [Kubernetes and You](#kubernetes-and-you)
+  - [Concepts](#concepts)
+    - [GitOps](#gitops)
+      - [Pull vs Push?](#pull-vs-push)
+      - [Push Based GitOps](#push-based-gitops)
+      - [Pull Based GitOps](#pull-based-gitops)
+    - [Kubernetes](#kubernetes)
+    - [What Kubernetes Isn't](#what-kubernetes-isnt)
+  - [Goals](#goals)
+    - [Git Repository Structure](#git-repository-structure)
+    - [State Reconciliation](#state-reconciliation)
+    - [Cluster Configuration Change Promotion (Platform)](#cluster-configuration-change-promotion-platform)
+      - [Monorepository Pattern](#monorepository-pattern)
+      - [Multirepository Pattern](#multirepository-pattern)
+    - [Sandbox Environments](#sandbox-environments)
+    - [Gitops from a Platform Team Perspective](#gitops-from-a-platform-team-perspective)
+      - [Source of Truth](#source-of-truth)
+    - [Gitops from a Development Team Perspective](#gitops-from-a-development-team-perspective)
+    - [Deleting a Cluster](#deleting-a-cluster)
+  - [Working Examples](#working-examples)
+    - [Deployment](#deployment)
+    - [Clean up](#clean-up)
 
 > **NOTE**: _High level goals and progress can be tracked against the [goals](GOALS.md) page._
 
