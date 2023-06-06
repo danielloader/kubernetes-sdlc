@@ -10,7 +10,7 @@ spec:
   interval: 5m0s
   url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
   ref:
-    tag: main 
+    tag: 0.0.x 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
