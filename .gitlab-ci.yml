@@ -1,30 +1,32 @@
-variables:
-  AWS_ACCOUNT_ID: 676193640153
-  AWS_WEB_IDENTITY_TOKEN_FILE: "/tmp/web-identity-token"
-  AWS_ROLE_ARN: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/gitlab-runner-role"
-  AWS_DEFAULT_REGION: eu-west-1
+# variables:
+#   AWS_ACCOUNT_ID: 676193640153
+#   AWS_WEB_IDENTITY_TOKEN_FILE: "/tmp/web-identity-token"
+#   AWS_ROLE_ARN: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/gitlab-runner-role"
+#   AWS_DEFAULT_REGION: eu-west-1
 
-create-repository:
-  image:
-    name: amazon/aws-cli
-    entrypoint: [""]
-  script:
-    - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
-    - aws ecr create-repository --repository-name ${CI_PROJECT_NAME} --region ${AWS_DEFAULT_REGION} || true
+# create-repository:
+#   image:
+#     name: amazon/aws-cli
+#     entrypoint: [""]
+#   script:
+#     - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
+#     - aws ecr create-repository --repository-name ${CI_PROJECT_NAME} --region ${AWS_DEFAULT_REGION} || true
 
-publish:
+build:
   image:
     name: fluxcd/flux-cli:v2.0.0-rc.5
     entrypoint: [""]
-  needs:
-    - create-repository
-  before_script:
-    - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  # needs:
+  #   - create-repository
+  # before_script:
+  #   - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
   script:
     - set -x
     - |
-      flux push artifact oci://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${CI_PROJECT_NAME}:${CI_COMMIT_SHORT_SHA} \
+      docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+      flux push artifact oci://$IMAGE_TAG \
       --path="./platform" \
       --source="${CI_REPOSITORY_URL}" \
-      --revision="${CI_COMMIT_BRANCH}@sha1:${CI_COMMIT_SHA}" \
-      --provider aws
+      --revision="${CI_COMMIT_SHORT_SHA}@sha1:${CI_COMMIT_SHA}" 
