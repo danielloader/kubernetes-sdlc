@@ -6,17 +6,23 @@ tasks:
   bootstrap-staging:
     cmds:
       - kind create cluster --config create/staging.yaml
-      - flux bootstrap gitlab --context kind-staging --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging 
+      - flux bootstrap github --context kind-staging --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/staging 
   
   bootstrap-production:
     cmds:
-      - kind create cluster --config create/staging.yaml
-      - flux bootstrap gitlab --context kind-staging --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging 
+      - kind create cluster --config create/production.yaml
+      - flux bootstrap github --context kind-production --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/production 
+
+  bootstrap-development:
+    cmds:
+      - kind create cluster --config create/development.yaml
+      - flux bootstrap github --context kind-development --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/development 
 
   create: 
     cmds:
       - task: bootstrap-staging
       - task: bootstrap-production
+      - taek: bootstrap-development
 
   delete:
     cmds:

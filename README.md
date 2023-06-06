@@ -429,7 +429,7 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: oci://registry.gitlab.com/***REMOVED***/fluxcd-demo
+  url: oci://ghrc.io/danielloader/fluxcd-demo
   ref:
     semver: 0.0.x 
 ---
@@ -485,7 +485,7 @@ ref:
 + branch: your-experimental-branch
 secretRef:
   name: platform-repository
-url: https://gitlab.com/***REMOVED***/fluxcd-demo.git
+url: https://github.com/danielloader/fluxcd-demo.git
 ```
 
 > **NOTE:** _If you are cloning from staging or production they are configured for OCIRepository access rather than a GitRepository, so you'll need to swap the repository object around as above, but additionally change the Kustomization objects to reference and reflect this type change as shown:
