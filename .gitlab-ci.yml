@@ -7,7 +7,7 @@ build:
   script:
     - set -x
     - |
-      flux push artifact oci://$CI_REGISTRY_IMAGE:IMAGE_TAG \
+      flux push artifact oci://$CI_REGISTRY_IMAGE:$IMAGE_TAG \
       --creds="$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD" \
       --path="./platform" \
       --source="${CI_REPOSITORY_URL}" \
