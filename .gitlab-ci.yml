@@ -15,7 +15,7 @@
 build:
   image:
     name: fluxcd/flux-cli:v2.0.0-rc.5
-    entrypoint: [""]
+    entrypoint: ["/bin/sh"]
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   # needs:
@@ -24,22 +24,24 @@ build:
   #   - echo "$CI_JOB_JWT_V2" > $AWS_WEB_IDENTITY_TOKEN_FILE
   script:
     - set -x
-    - |
-      AUTH=$(echo "$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD" | base64)
+    - pwd 
+    - ls -lah
+    # - |
+    #   AUTH=$(echo "$CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD" | base64)
 
-      mkdir -p $HOME/.docker
+    #   mkdir -p $HOME/.docker
 
-      cat << EOF > $HOME/.docker/config.json
-      {
-        "auths": {
-          "$CI_REGISTRY": {
-            "auth": "$AUTH"
-          }
-        }
-      }
-      EOF
-    - |
-      flux push artifact oci://$IMAGE_TAG \
-      --path="./platform" \
-      --source="${CI_REPOSITORY_URL}" \
-      --revision="${CI_COMMIT_SHORT_SHA}@sha1:${CI_COMMIT_SHA}" 
+    #   cat << EOF > $HOME/.docker/config.json
+    #   {
+    #     "auths": {
+    #       "$CI_REGISTRY": {
+    #         "auth": "$AUTH"
+    #       }
+    #     }
+    #   }
+    #   EOF
+    # - |
+    #   flux push artifact oci://$IMAGE_TAG \
+    #   --path="./platform" \
+    #   --source="${CI_REPOSITORY_URL}" \
+    #   --revision="${CI_COMMIT_SHORT_SHA}@sha1:${CI_COMMIT_SHA}" 
