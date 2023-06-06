@@ -19,7 +19,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./platform/services
+  path: ./services
   prune: true
   sourceRef:
     kind: OCIRepository
@@ -32,7 +32,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./platform/configs
+  path: ./configs
   prune: true
   sourceRef:
     kind: OCIRepository
@@ -45,7 +45,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./platform/service-configs
+  path: ./service-configs
   prune: true
   sourceRef:
     kind: OCIRepository
