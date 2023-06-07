@@ -6,9 +6,9 @@ metadata:
   namespace: flux-system
 spec:
   secretRef:
-    name: gitlab-registry
+    name: platform-repository
   interval: 1m0s
-  url: oci://ghrc.io/danielloader/fluxcd-demo
+  url: oci://registry.gitlab.com/***REMOVED***/fluxcd-demo
   ref:
     semver: 0.0.x 
 ---
