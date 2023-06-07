@@ -1,9 +1,18 @@
 ---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: podinfo
+  namespace: flux-apps
+spec:
+  interval: 10m0s
+  url: https://stefanprodan.github.io/podinfo
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: podinfo
-  namespace: flux-system
+  namespace: flux-apps
 spec:
   chart:
     spec:
