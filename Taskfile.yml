@@ -8,13 +8,21 @@ vars:
 
 tasks:
   create-clusters:
+    preconditions:
+      - |
+        while read var; do
+          [ -z "${!var}" ] && { exit 1 }
+        done << EOF
+        REPO_OWNER
+        REPO_NAME
+        EOF
     cmds:
       - |
         for CLUSTER in {{.CLUSTERS}}
         do 
           NAME=$(yq '.name' < "$CLUSTER")
           kind create cluster --config "$CLUSTER"
-          flux bootstrap github --context kind-$NAME --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/$NAME
+          flux bootstrap github --context kind-$NAME --token-auth --owner {{.REPO_OWNER}} --repository {{.REPO_NAME}} --path ./clusters/$NAME
         done
 
   delete-clusters:

@@ -593,6 +593,7 @@ To demo multi cluster workflows locally the best option you have is to use [kind
 
 The only prerequisite is having access to a docker runtime and at least 8GB of memory assigned to the docker environment.
 
+1. Fork this repository.
 1. Create the kind clusters:
 
     ```shell
@@ -601,24 +602,24 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
     kind create cluster --config create/development.yaml
     ```
 
-2. Bootstrap the clusters with FluxCD:
+1. Bootstrap the clusters with FluxCD:
 
     ```shell
     export GITHUB_TOKEN=<your personal access token with api and write_repo scoped roles>
-    flux bootstrap github --context kind-production --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/production 
-    flux bootstrap github --context kind-staging --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/staging 
-    flux bootstrap github --context kind-development --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/development 
+    flux bootstrap github --context kind-production --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/production 
+    flux bootstrap github --context kind-staging --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/staging 
+    flux bootstrap github --context kind-development --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/development 
     ```
 
-3. Add the Container Registry secret to the flux-system namespace:
+1. Add the Container Registry secret to the flux-system namespace:
 
     ```shell
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system --context kind-production
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system --context kind-staging
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system --context kind-development
+    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-production
+    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-staging
+    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-development
     ```
 
-4. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
+1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
 
 ### Clean Up
 
