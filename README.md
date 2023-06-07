@@ -1,5 +1,7 @@
 # Kubernetes - A GitOps Story
 
+<!-- markdownlint-disable MD033 -->
+
 This repository exists to store a working proof of concept and notes around how to handle change management as a platform team around kubernetes clusters.
 
 - [Kubernetes - A GitOps Story](#kubernetes---a-gitops-story)
@@ -19,7 +21,7 @@ This repository exists to store a working proof of concept and notes around how 
       - [Source of Truth](#source-of-truth)
       - [Creating Platform Sandboxes](#creating-platform-sandboxes)
     - [GitOps from a Development Team Perspective](#gitops-from-a-development-team-perspective)
-    - [Deleting a Cluster](#deleting-a-cluster)
+    - [Deleting a Sandbox Cluster](#deleting-a-sandbox-cluster)
   - [Working Examples](#working-examples)
     - [Deployment](#deployment)
     - [Clean Up](#clean-up)
@@ -430,9 +432,9 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: oci://ghrc.io/danielloader/fluxcd-demo # github registry
+  url: oci://registry.gitlab.com/***REMOVED***/fluxcd-demo
   ref:
-    semver: 0.0.x 
+    semver: 0.0.x
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -440,7 +442,7 @@ metadata:
   name: platform-services
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 1m
   path: ./platform/services
   prune: true
   sourceRef:
@@ -482,8 +484,6 @@ Since this read-write process is more complex than the read-only process in the 
 
 ![sandbox promotion](docs/change-promotion-platform-a.drawio.svg)
 
-> **NOTE:** _Ordering of the actions described in this section will crack the incrementing circles in the diagrams._
-
 The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
 
 In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as development is tracking against main the first change you will need to make is to point the branch reference to track your new branch.
@@ -519,7 +519,10 @@ Next step is provisioning your infrastructure as code template to create a worki
     rsync -av --exclude='*/gotk-sync.yaml' "clusters/development/" "clusters/sandbox-a"
     ```
 
-1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster. This diagram gives some context on what a bootstrapping operation does.
+1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
+
+    <details>
+    <summary>How Flux Boostraps</summary>
 
     ![flux bootstrap sequence](docs/fluxcd-bootstrap.drawio.svg)
 
@@ -528,10 +531,11 @@ Next step is provisioning your infrastructure as code template to create a worki
     1. Add top level root `Kustomization` object to track itself, the fluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
     1. These two objects are then committed and pushed to git and then the same objects are pushed to the kubernetes cluster to start the loop.
     1. Finally you can see the reconciliation steps taking place in the cluster with external tooling.
+    </details>
 
 1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
 1. Validate the changes are success and meet the requirements.
-1. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
+1. Destroy the sandbox kubernetes cluster stack. See [deleting a sandbox cluster](#deleting-a-sandbox-cluster) for details.
 1. Copy the directory back to the source location in the current branch and delete the sandbox directory.
 
     ```shell
@@ -542,12 +546,14 @@ Next step is provisioning your infrastructure as code template to create a worki
     > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory._
 
 1. Raise pull request to merge this state into main.
+
+    ![sandbox promotion](docs/change-promotion-platform-b.drawio.svg)
+
 1. Monitor the change reconciliation and deployment on the deployment cluster.
-1. Adjust any infrastructure as code variables for the development cluster to align it to the sandbox. _These must be non-destructive changes._
+1. Adjust any infrastructure as code values for the development cluster to align it to the sandbox. _These must be non-destructive changes._
+1. Pushing those changes from Deployment to Staging is a case of tagging the main branch containing the platform components to create an OCI artifact, which gets automatically applied to staging if it is a minor or patch version increment or manually if there are breaking major changes by virtue of changing the OCIRepository object semver range.
 
-At this point should have been able to increment any addons or control plane versions of the kubernetes cluster in addition to making any in-cluster state changes safely and confidently apply them to the Deployment cluster.
-
-Pushing those changes from Deployment to Staging is a case of tagging the main branch containing the platform components to create an OCI artifact, which gets automatically applied to staging if it is a minor or patch version increment or manually if there are breaking major changes by virtue of changing the OCIRepository object semver range.
+    ![sandbox promotion](docs/change-promotion-platform-c.drawio.svg)
 
 Finally pushing from staging to Production is a case of incrementing the tagged platform artifact in the OCIRepository object in Production.
 
@@ -561,6 +567,16 @@ To summarise, each stage is slightly more gated than the last:
 
 Congratulations, as a development team your only concern is around the application layer - and while that is not devoid of danger, it is however a lot fewer moving parts to worry about and the ones you do have to are somewhat in your gift to control and change.
 
+At a high level applications are deployed in the same manner as services are in the platform tier; either as helm charts or [kustomized](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/) manifests.
+
+In contrast to the platform team, having a repository which owns cluster stacks and the infrastructure as code to deploy these stacks, the application teams are encouraged to make repositories per application. Furthermore the definition of an application is fuzzy, especially in the era of microservices which have sometimes tightly coupled functionality mandating cohabitating deployments.
+
+While there is not a hard and fast definition in this area a good starting point is treating an application as a standalone deployable stack that delivers a service to a customer or user.
+
+> **NOTE:** _It is entirely possible to have nested HelmRelease objects in flux, as the controller listens cluster-wide for objects. This means you can have an "application" that is just a collection of HelmRelease and HelmRepository objects that bring in smaller components and cohabitate them into a single namespace and have a parent object to allow full deletion cleanly of a stack._
+
+In this repository there is the fluxCD default testing helm chart `podinfo` as an example of deploying a chart from another repository.
+
 > **_NOTES FOR LATER_**
 >
 > - [ ] Cover helm release semver ranges; patch for production, minor for staging and major for development.
@@ -572,7 +588,7 @@ Congratulations, as a development team your only concern is around the applicati
 > - [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
 > - [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
 
-### Deleting a Cluster
+### Deleting a Sandbox Cluster
 
 > **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
 >
@@ -585,7 +601,7 @@ Congratulations, as a development team your only concern is around the applicati
 
 ## Working Examples
 
-This repository contains working examples in addition to the whitepaper you are currently reading.
+This repository contains working examples in addition to the document you are currently reading.
 
 ### Deployment
 
@@ -598,28 +614,37 @@ Prerequisites:
 - [kind](https://kind.sigs.k8s.io/)
 - [flux](https://fluxcd.io/flux/cmd/)
 
-1. For each environment:
-   1. Create the kind clusters:
+For each environment:
 
-       ```shell
-       kind create cluster --config create/$ENV_NAME.yaml
-       ```
+1. Create the clusters:
 
-   1. Bootstrap the clusters with FluxCD whilst being mindful of the owner (group path) and repository name:
+  ```shell
+  kind create cluster --config create/$ENV_NAME.yaml
+  ```
 
-       ```shell
-       export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
-       flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/$ENV_NAME --context kind-$ENV_NAME
-       ```
+1. Bootstrap the clusters with FluxCD whilst being mindful of the owner (group path) and repository name:
 
-   1. Add the Container Registry secret to the `flux-system` namespace so that the platform components can be pulled:
+  ```shell
+  export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
+  flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/$ENV_NAME --context kind-$ENV_NAME
+  ```
 
-       ```shell
-       export GITLAB_USERNAME=<gitlab login email>
-       kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-$ENV_NAME
-       ```
+1. Add the Container Registry secret to the `flux-system` namespace so that the platform components can be pulled:
 
-1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
+  OCIRepository Platform Artifacts (Production/Staging):
+
+  ```shell
+  export GITLAB_USERNAME=<gitlab login email>
+  kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-$ENV_NAME
+  ```
+
+  GitRepository Platform Branch (Deployment/Sandboxes):
+
+  ```shell
+  kubectl create secret generic platform-repository -n flux-system --from-literal=username=git --from-literal=password="$GITLAB_TOKEN" --context kind-development
+  ```
+
+Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
 
 Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
 
