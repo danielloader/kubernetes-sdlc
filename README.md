@@ -419,7 +419,7 @@ Before making changes to a cluster it is worth talking about the differences bet
 
 > **NOTE:** _Long lived stable clusters **should** track against OCI artifacts. The exception to the rule would be a canary cluster that is just representing the state of `main` branches across the stacks to give you an oversight into the health of the system without any users suffering broken environments. Such an environment would represent the minimum scaling of the cluster for cost reasons, and be non-interactive other than to emit errors to your logging platform._
 
-Taking the example below of [`./clusters/production/flux-system/platform.yaml`](clusters/production/flux-system/platform.yaml) the behaviour the resulting configuration would have in the host cluster:
+Taking the example below of [`./clusters/production/platform.yaml`](clusters/production/platform.yaml) the behaviour the resulting configuration would have in the host cluster:
 
 ```yaml
 ---
