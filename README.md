@@ -474,7 +474,7 @@ Here are some starting point recommendations for cluster types:
 
 - **Sandbox - Platform Changes**
 
-  The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. 
+  The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster.
 
 #### Creating Platform Sandboxes
 
@@ -502,7 +502,7 @@ spec:
   + branch: branch-a
   secretRef:
     name: platform-repository
-  url: https://github.com/danielloader/fluxcd-demo.git
+  url: https://gitlab.com/***REMOVED***/fluxcd-demo.git
 ```
 
 Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
@@ -605,18 +605,19 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
 1. Bootstrap the clusters with FluxCD:
 
     ```shell
-    export GITHUB_TOKEN=<your personal access token with api and write_repo scoped roles>
-    flux bootstrap github --context kind-production --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/production 
-    flux bootstrap github --context kind-staging --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/staging 
-    flux bootstrap github --context kind-development --token-auth --owner <GITHUB_USERNAME> --repository fluxcd-demo --path ./clusters/development 
+    export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
+    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/production --context kind-production
+    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging --context kind-staging
+    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/development --context kind-development
     ```
 
 1. Add the Container Registry secret to the flux-system namespace:
 
     ```shell
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-production
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-staging
-    kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> --namespace flux-system --context kind-development
+    export GITLAB_USERNAME=<gitlab login email>
+    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-production
+    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-staging
+    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-development
     ```
 
 1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.

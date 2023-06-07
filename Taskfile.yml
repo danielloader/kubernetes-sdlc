@@ -22,7 +22,7 @@ tasks:
         do 
           NAME=$(yq '.name' < "$CLUSTER")
           kind create cluster --config "$CLUSTER"
-          flux bootstrap github --context kind-$NAME --token-auth --owner {{.REPO_OWNER}} --repository {{.REPO_NAME}} --path ./clusters/$NAME
+          flux bootstrap gitlab --token-auth --owner {{.REPO_OWNER}} --repository {{.REPO_NAME}} --path "./clusters/$NAME" --context kind-$NAME
         done
 
   delete-clusters:
