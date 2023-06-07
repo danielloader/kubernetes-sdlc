@@ -2,28 +2,26 @@ version: "3"
 
 dotenv: ['.env']
 
+vars:
+  CLUSTERS:
+    sh: echo $(find ./create -type f -iname '*.yaml')
+
 tasks:
-  bootstrap-staging:
+  create-clusters:
     cmds:
-      - kind create cluster --config create/staging.yaml
-      - flux bootstrap github --context kind-staging --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/staging 
-  
-  bootstrap-production:
-    cmds:
-      - kind create cluster --config create/production.yaml
-      - flux bootstrap github --context kind-production --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/production 
+      - |
+        for CLUSTER in {{.CLUSTERS}}
+        do 
+          NAME=$(yq '.name' < "$CLUSTER")
+          kind create cluster --config "$CLUSTER"
+          flux bootstrap github --context kind-$NAME --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/$NAME
+        done
 
-  bootstrap-development:
+  delete-clusters:
     cmds:
-      - kind create cluster --config create/development.yaml
-      - flux bootstrap github --context kind-development --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/development 
-
-  create: 
-    cmds:
-      - task: bootstrap-staging
-      - task: bootstrap-production
-      - taek: bootstrap-development
-
-  delete:
-    cmds:
-      - kind delete clusters --all
+      - |
+        for CLUSTER in {{.CLUSTERS}}
+        do 
+          NAME=$(yq '.name' < "$CLUSTER")
+          kind delete cluster --name $NAME
+        done
