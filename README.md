@@ -17,6 +17,7 @@ This repository exists to store a working proof of concept and notes around how 
       - [Sandbox Environments](#sandbox-environments)
     - [GitOps from a Platform Team Perspective](#gitops-from-a-platform-team-perspective)
       - [Source of Truth](#source-of-truth)
+      - [Platform Sandboxes](#platform-sandboxes)
     - [GitOps from a Development Team Perspective](#gitops-from-a-development-team-perspective)
     - [Deleting a Cluster](#deleting-a-cluster)
   - [Working Examples](#working-examples)
@@ -383,7 +384,7 @@ In a cloud environment the kubernetes control plane is more than likely to be un
 
 > **NOTE:** _While the application layer is out of scope, if you are making changes that you suspect will affect a development team you should deploy application stacks onto your platform sandbox cluster to helm confirm a healthy state is achieved, and if the state isn't - tickets scheduled with the team warning them of upcoming changes that will incur work to be done._
 
-If you take this model, with everything resting on the kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will be as follows:
+If you take this model with everything resting on the kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will likely be:
 
 1. Upstream kubernetes upgrades are mandated with a breaking change; often promotion of beta APIs to stable or hard removal of alpha and beta API groups.
 2. Upstream [Helm charts](https://helm.sh/docs/topics/charts/) that rely on those core APIs will also change and often take the opportunity to include breaking changes when their underlying APIs change.
@@ -412,7 +413,7 @@ So now you have a grasp on the scope some up coming changes, what's next?
 
 Well you need to create a cluster to try to mitigate the impact of these changes, ideally provisioning the latest version of the control plane as to experiment with the breaking changes ahead of time.
 
-Before making changes to a cluster it is worth talking about the differences between an [OCIRepository](https://fluxcd.io/flux/components/source/ocirepositories/) and a [GitRepository](https://fluxcd.io/flux/components/source/gitrepositories/) source; the former provides stability and strong versioning guarantees and the latter allows you the freedom to track changes using any valid git reference.
+Before making changes to a cluster it is worth talking about the differences between an [OCIRepository](https://fluxcd.io/flux/components/source/ocirepositories/) and a [GitRepository](https://fluxcd.io/flux/components/source/gitrepositories/) source; both can be used interchangeably but you could split them into the former providing stability and strong versioning guarantees and the latter allows you the freedom to track changes using any valid git reference.
 
 > **NOTE:** _Long lived stable clusters **should** track against OCI artifacts. The exception to the rule would be a canary cluster that is just representing the state of `main` branches across the stacks to give you an oversight into the health of the system without any users suffering broken environments. Such an environment would represent the minimum scaling of the cluster for cost reasons, and be non-interactive other than to emit errors to your logging platform._
 
@@ -429,7 +430,7 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: oci://ghrc.io/danielloader/fluxcd-demo
+  url: oci://ghrc.io/danielloader/fluxcd-demo # github registry
   ref:
     semver: 0.0.x 
 ---
@@ -447,127 +448,114 @@ spec:
     name: platform
 ```
 
-In this configuration the [`./clusters/production/flux-system/platform.yaml`](clusters/production/flux-system/platform.yaml) file is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
+In this configuration the [`./clusters/production/platform.yaml`](clusters/production/platform.yaml) file is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
 
-Additionally there is [semver](https://semver.org/) version tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period. [^semver-tracking] The constraints on this behaviour are defined in the `.spec.ref.semver` value and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) rule set. Here are some starting point recommendations for long running clusters:
+Additionally there is [semver](https://semver.org/) version tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period. [^semver-tracking] The constraints on this behaviour are defined in the `.spec.ref.semver` value and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) rule set.
+
+Here are some starting point recommendations for cluster types:
 
 [^semver-tracking]: If you push a `0.0.3` tagged OCI artifact, and `0.0.2` is currently running in the cluster, then the rules above would download the `0.0.3` artifact and trigger reconciliation on the downstream dependencies that use this OCIRepository source.
 
-**Production**: Static artifact reference this cluster is a _known_ state. (`1.2.3`)
+- **Production**
 
-**Staging**: Somewhat hands off patching, this cluster should use a semver range filter. (`1.2.x` or `1.x.x`)
+  Static artifact reference this cluster is a _known_ state at a glance - a fixed tag. (`1.2.3`)
 
-**Deployment**: Tracks the `main` branch of the platform stack, with main being considered a rolling source of truth of a working sack. Will by its nature be usually ahead of tagged releases in staging and production, but not always. It is entirely possible that version `1.2.3` is deployed simultaneously to production, staging and development if changes haven't been made in a long time and the last commit in the main branch is also `1.2.3`.
+- **Staging**
+  
+  Somewhat automatic patching this cluster should use a semver range filter and automatically deploy non breaking changes. (`1.2.x` or `1.x.x`)
 
-**_Sandboxes_** depending on their intended use cases will track differently.
+- **Deployment**
+  
+  Tracks the `main` branch of the platform stack, with main being considered a rolling source of truth of a working sack. Will by its nature be usually ahead of tagged releases in staging and production, but not always. It is entirely possible that version `1.2.3` is deployed simultaneously to production, staging and development if changes haven't been made in a long time and the last commit in the main branch is also `1.2.3`.
 
-**Performance test against a long lived named environment clone** - You would track the same semver or tag version as the source environment/cluster when cloning an environment. Fortunately this is the default behaviour when you clone an environment. No action needed.
+- **Sandbox - Performance Testing**
+  
+  You would track the same semver or tag version as the source environment/cluster when cloning an environment. Since you are not intending to merge changes back to the source cluster you do not need to branch from main. As such simply copying a cluster directory and bootstrapping it onto a new cluster is sufficient to get going.
 
-**Platform team changing the control plane version or the platform services configuration and charts** - Since this likely a breaking change, or has the risk of disruption to teams who have no power to fix it, these sit clearly in the sandbox cluster territory.
+- **Sandbox - Platform Changes**
 
-Let's review the workflow for this invasive, complicated, but purposeful change process.
+  The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. 
+
+#### Platform Sandboxes
+
+Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
 ![sandbox promotion](docs/change-promotion-platform-a.drawio.svg)
 
-Starting with this diagram the first task is creating a branch in this repository to do work on, and in this branch update the reference that you inherited from cloning from development to point to your branch (as development tracks main).
+> **NOTE:** _Ordering of the actions described in this section will crack the incrementing circles in the diagrams._
+
+The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
+
+In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as development is tracking against main the first change you will need to make is to point the branch reference to track your new branch.
 
 ```diff
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-name: platform
-namespace: flux-system
+  name: platform
+  namespace: flux-system
 spec:
-interval: 1m0s
-ref:
-- branch: main
-+ branch: your-experimental-branch
-secretRef:
-  name: platform-repository
-url: https://github.com/danielloader/fluxcd-demo.git
+  interval: 1m0s
+  ref:
+  - branch: main
+  + branch: branch-a
+  secretRef:
+    name: platform-repository
+  url: https://github.com/danielloader/fluxcd-demo.git
 ```
 
-> **NOTE:** _If you are cloning from staging or production they are configured for OCIRepository access rather than a GitRepository, so you'll need to swap the repository object around as above, but additionally change the Kustomization objects to reference and reflect this type change as shown:
->
-> ```diff
-> ---
-> apiVersion: kustomize.toolkit.fluxcd.io/v1
-> kind: Kustomization
-> metadata:
-> name: platform-services
-> namespace: flux-system
-> spec:
-> interval: 10m0s
-> path: ./platform/services
-> prune: true
-> sourceRef:
-> - kind: OCIRepository 
-> + kind: GitRepository 
->   name: platform
-> ```
+Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
 
-At this point you should provision your infrastructure as code template to create a working cluster, with the context set correctly, as checked via the `kubectl config get-contexts` output.
+1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in.
 
-1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in. e.g. kubernetes being increemented from 1.26 to 1.27.
-1. Provide some repository secrets to access helm charts and other manifests from a registry, either OCI repository or git: [^registry-creds]
-
-  > **NOTE:** _While you could piggy back off the flux bootstrap credentials in `flux-system` it's good practice to have a set of credentials set for the platform components if only because it gives you the freedom to split the repositories up and it allows you to retain secret name parity between OCI and Git repositories._
-
-  [^registry-creds]: You may want to include this in the terraform state using a gitlab provider to provision some credentials in the cluster creation state but it isn't essential to do so.
-
-  <details>
-  <summary>Github</summary>
-
-  ```shell
-  export GITHUB_TOKEN=<PAT with repo scope>
-  kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
-  kubectl create secret generic platform-repository --set-literal=username=USERNAME --set-literal=password=$GITHUB_TOKEN --namespace flux-system
-  ```
-
-  </details>
-
-  <details>
-  <summary>Gitlab</summary>
-
-
-  ```shell
-  export GITLAB_TOKEN=<PAT with api and write_repository scopes>
-  kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=$GITLAB_TOKEN -n flux-system
-  kubectl create secret generic platform-repository --set-literal=username=git --set-literal=password=$GITLAB_TOKEN --namespace flux-system
-  ```
-
-  </details>
-
-1. Copy the cluster you wish to clone from in the [`./clusters/`](clusters/) directory, to a new cluster.
+   - Kubernetes control plane version being incremented.
+   - Core EKS addons versions.
+  
+1. Since the above GitRepository object has a `.spec.secretRef` for a private repository, you will need to provide a secret to connect to the repository with the same name in the `flux-system` namespace. [Details](https://fluxcd.io/flux/components/source/gitrepositories/#secret-reference) can be found in the FluxCD documentation.
+1. Clone the development cluster to a sandbox:
 
     ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/development/" "./clusters/sandbox-a"
+    rsync -av --exclude='*/gotk-sync.yaml' "clusters/development/" "clusters/sandbox-a"
     ```
 
-2. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
+1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster. This diagram gives some context on what a bootstrapping operation does.
+
+    ![flux bootstrap sequence](docs/fluxcd-bootstrap.drawio.svg)
+
+    1. Install the FluxCD controller objects into the cluster.
+    1. Create a `GitRepository` object that references the flags in the bootstrap command.
+    1. Add top level root `Kustomization` object to track itself, the fluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
+    1. These two objects are then committed and pushed to git and then the same objects are pushed to the kubernetes cluster to start the loop.
+    1. Finally you can see the reconciliation steps taking place in the cluster with external tooling.
+
+1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
+1. Validate the changes are success and meet the requirements.
+1. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
+1. Copy the directory back to the source location in the current branch and delete the sandbox directory.
 
     ```shell
-    export GITHUB_TOKEN=<a personal access token with api and write_repo scopes>
-    flux bootstrap github --token-auth --owner "danielloader" --repository "fluxcd-demo" --path "./clusters/cluster-a" --branch "your-exploratory-branch"
+    rsync -av --exclude='*/gotk-sync.yaml' "clusters/sandbox-a/" "clusters/development"
+    rm -r "clusters/sandbox-a"
     ```
 
-3. Make your changes to the cluster state via git commits.
-4. Run any validation and testing scripts you have accumulated over time, or manually test the cluster to be confident the changes haven't impacted the services.
-5. Copy the directory back to the source location.
+    > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory._
 
-    ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' "./clusters/sandbox-a/" "./clusters/development"
-    ```
+1. Raise pull request to merge this state into main.
+1. Monitor the change reconciliation and deployment on the deployment cluster.
+1. Adjust any infrastructure as code variables for the development cluster to align it to the sandbox. _These must be non-destructive changes._
 
-    > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
+At this point should have been able to increment any addons or control plane versions of the kubernetes cluster in addition to making any in-cluster state changes safely and confidently apply them to the Deployment cluster.
 
-6. Raise pull request to merge this state into main.
-7. Monitor the change reconciliation and deployment on the deployment cluster.
-8. If it goes well, delete the sandbox cluster directory, if not, revert the commit and revert the parent cluster state.
-    > **NOTE:** _At this point your changes to the cluster are on top of the cluster, the version of kubernetes control plane itself itself has not been changed thus far even if your sandbox was newer than development._
-9. Re-run the infrastructure-as-code that controls the development cluster to increment the kubernetes cluster version. Everything should upgrade and settle down afterwards to a similar if not identical state as the sandbox was in.
-10. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
+Pushing those changes from Deployment to Staging is a case of tagging the main branch containing the platform components to create an OCI artifact, which gets automatically applied to staging if it is a minor or patch version increment or manually if there are breaking major changes by virtue of changing the OCIRepository object semver range.
+
+Finally pushing from staging to Production is a case of incrementing the tagged platform artifact in the OCIRepository object in Production.
+
+Each stage is slightly more gated than the last:
+
+- Development runs against a git branch (main) and this encourages the main branch of the repository to remain in a "deployable" state.
+- Staging has some autonomy to track incrementing artifact versions as and when tagging of the main branch takes place.
+- Production has strong versioning gates where in you have to manually increment the deployed version of the platform. It is a compromise state between ease of deployment and adding some checks and balances around automation.
 
 ### GitOps from a Development Team Perspective
 
@@ -586,21 +574,14 @@ Congratulations, as a development team your only concern is around the applicati
 
 ### Deleting a Cluster
 
-Since FluxCD is a reconciliation loop to retain state, you have two options to remove a cluster:
-
-- Delete/comment out the state file by file in the git repository and let FluxCD uninstall everything in the order you want it to go (service configurations before services which provide custom resource definitions and [finaliser](https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/) functions).
-- Suspend the reconciliation at the source and delete the objects in the cluster.
-
-The latter makes more sense when you are operating in a "main" only branch repository, as to make reverting commits easier.
+> **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
+>
+> _It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc). Experiments in this area will come later._
 
 1. Suspend the root FluxCD entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
 1. Delete the application HelmReleases/Kustomization objects - this is to trigger the finalisers to clear down external resources; EBS volumes, ALB etc.
 1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
 1. Destroy the kubernetes cluster using the infrastructure as code that deployed it initially.
-
-> **NOTE:** _As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
->
-> _It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc)._
 
 ## Working Examples
 
