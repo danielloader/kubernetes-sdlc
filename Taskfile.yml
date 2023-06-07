@@ -6,30 +6,54 @@ vars:
   CLUSTERS:
     sh: echo $(find ./create -type f -iname '*.yaml')
 
-tasks:
-  create-clusters:
-    preconditions:
-      - |
-        while read var; do
-          [ -z "${!var}" ] && { exit 1 }
-        done << EOF
-        REPO_OWNER
-        REPO_NAME
-        EOF
-    cmds:
-      - |
-        for CLUSTER in {{.CLUSTERS}}
-        do 
-          NAME=$(yq '.name' < "$CLUSTER")
-          kind create cluster --config "$CLUSTER"
-          flux bootstrap gitlab --token-auth --owner {{.REPO_OWNER}} --repository {{.REPO_NAME}} --path "./clusters/$NAME" --context kind-$NAME
-        done
+output:
+  group:
+    error_only: true
 
-  delete-clusters:
+tasks:
+  create-cluster:
+    internal: true
     cmds:
-      - |
-        for CLUSTER in {{.CLUSTERS}}
-        do 
-          NAME=$(yq '.name' < "$CLUSTER")
-          kind delete cluster --name $NAME
-        done
+    - kind create cluster --config "{{.CLUSTER_CONFIG_PATH}}"
+    - flux bootstrap gitlab --token-auth --owner {{.REPO_OWNER}} --repository {{.REPO_NAME}} --path "./clusters/{{.CLUSTER_NAME}}" --context kind-{{.CLUSTER_NAME}}
+    vars:
+      CLUSTER_NAME:
+        sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
+    status:
+    - kubectl cluster-info --context kind-{{.CLUSTER_NAME}}
+
+  delete-cluster:
+    internal: true
+    cmds:
+    - kind delete cluster --name "{{.CLUSTER_NAME}}"
+    vars:
+      CLUSTER_NAME:
+        sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
+
+  create:
+    deps:
+    - task: create-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/production.yaml"
+    - task: create-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/staging.yaml"
+    - task: create-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/development.yaml"
+    cmds:
+    - echo "Deployed!"
+
+
+  delete:
+    cmds:
+    - task: delete-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/production.yaml"
+    - task: delete-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/staging.yaml"
+    - task: delete-cluster
+      vars: 
+        CLUSTER_CONFIG_PATH: "create/development.yaml"
+    - echo "Destroyed!"
