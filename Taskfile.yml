@@ -19,7 +19,7 @@ tasks:
     - kind create cluster --config "{{.CLUSTER_CONFIG_PATH}}" --wait 60s
     - flux bootstrap gitlab --token-auth --owner ***REMOVED***  --repository fluxcd-demo --path "./clusters/{{.CLUSTER_NAME}}" --context kind-{{.CLUSTER_NAME}}
     - |
-      if [ -z "{{.OCI_PLATFORM}}" ]
+      if [ "{{.OCI_PLATFORM}}" == "true" ]
       then 
         kubectl create secret docker-registry platform-repository -n flux-system --docker-server=registry.gitlab.com --docker-username="{{.GITLAB_USERNAME}}" --docker-password="{{.GITLAB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
       else
