@@ -7,6 +7,7 @@
         "bierner.markdown-footnotes",
         "bierner.markdown-mermaid",
         "davidanson.vscode-markdownlint",
-        "mdickin.markdown-shortcuts"
+        "mdickin.markdown-shortcuts",
+        "task.vscode-task"
     ]
 }
