@@ -498,8 +498,8 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-  - branch: main
-  + branch: branch-a
+-   branch: main
++   branch: branch-a
   secretRef:
     name: platform-repository
   url: https://gitlab.com/***REMOVED***/fluxcd-demo.git
