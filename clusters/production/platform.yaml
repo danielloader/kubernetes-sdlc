@@ -18,7 +18,7 @@ metadata:
   name: platform-services
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 5m
   path: ./platform/services
   prune: true
   sourceRef:
@@ -31,7 +31,7 @@ metadata:
   name: platform-configs
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 1m
   path: ./platform/configs
   prune: true
   sourceRef:
@@ -44,7 +44,7 @@ metadata:
   name: platform-service-configs
   namespace: flux-system
 spec:
-  interval: 10m0s
+  interval: 1m
   path: ./platform/service-configs
   prune: true
   sourceRef:
