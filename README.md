@@ -516,13 +516,28 @@ At this point you should provision your infrastructure as code template to creat
 
   [^registry-creds]: You may want to include this in the terraform state using a gitlab provider to provision some credentials in the cluster creation state but it isn't essential to do so.
 
-  ```shell
-  kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
-  ```
+  <details>
+  <summary>Github</summary>
 
   ```shell
+  export GITHUB_TOKEN=<PAT with repo scope>
+  kubectl create secret docker-registry platform-repository --docker-server=ghcr.io --docker-username=<GITHUB_USERNAME> --docker-password=<PERSONAL_ACCESS_TOKEN> -n flux-system
   kubectl create secret generic platform-repository --set-literal=username=USERNAME --set-literal=password=$GITHUB_TOKEN --namespace flux-system
   ```
+
+  </details>
+
+  <details>
+  <summary>Gitlab</summary>
+
+
+  ```shell
+  export GITLAB_TOKEN=<PAT with api and write_repository scopes>
+  kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username=<GITLAB_USERNAME> --docker-password=$GITLAB_TOKEN -n flux-system
+  kubectl create secret generic platform-repository --set-literal=username=git --set-literal=password=$GITLAB_TOKEN --namespace flux-system
+  ```
+
+  </details>
 
 1. Copy the cluster you wish to clone from in the [`./clusters/`](clusters/) directory, to a new cluster.
 
@@ -530,16 +545,16 @@ At this point you should provision your infrastructure as code template to creat
     rsync -av --exclude='*/gotk-sync.yaml' "./clusters/development/" "./clusters/sandbox-a"
     ```
 
-1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
+2. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
 
     ```shell
     export GITHUB_TOKEN=<a personal access token with api and write_repo scopes>
     flux bootstrap github --token-auth --owner "danielloader" --repository "fluxcd-demo" --path "./clusters/cluster-a" --branch "your-exploratory-branch"
     ```
 
-1. Make your changes to the cluster state via git commits.
-1. Run any validation and testing scripts you have accumulated over time, or manually test the cluster to be confident the changes haven't impacted the services.
-1. Copy the directory back to the source location.
+3. Make your changes to the cluster state via git commits.
+4. Run any validation and testing scripts you have accumulated over time, or manually test the cluster to be confident the changes haven't impacted the services.
+5. Copy the directory back to the source location.
 
     ```shell
     rsync -av --exclude='*/gotk-sync.yaml' "./clusters/sandbox-a/" "./clusters/development"
@@ -547,12 +562,12 @@ At this point you should provision your infrastructure as code template to creat
 
     > **WARNING:** _It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
 
-1. Raise pull request to merge this state into main.
-1. Monitor the change reconciliation and deployment on the deployment cluster.
-1. If it goes well, delete the sandbox cluster directory, if not, revert the commit and revert the parent cluster state.
+6. Raise pull request to merge this state into main.
+7. Monitor the change reconciliation and deployment on the deployment cluster.
+8. If it goes well, delete the sandbox cluster directory, if not, revert the commit and revert the parent cluster state.
     > **NOTE:** _At this point your changes to the cluster are on top of the cluster, the version of kubernetes control plane itself itself has not been changed thus far even if your sandbox was newer than development._
-1. Re-run the infrastructure-as-code that controls the development cluster to increment the kubernetes cluster version. Everything should upgrade and settle down afterwards to a similar if not identical state as the sandbox was in.
-1. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
+9. Re-run the infrastructure-as-code that controls the development cluster to increment the kubernetes cluster version. Everything should upgrade and settle down afterwards to a similar if not identical state as the sandbox was in.
+10. Destroy the sandbox kubernetes cluster stack. See [deleting a cluster](#deleting-a-cluster) for details.
 
 ### GitOps from a Development Team Perspective
 
