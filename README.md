@@ -591,36 +591,37 @@ This repository contains working examples in addition to the whitepaper you are 
 
 To demo multi cluster workflows locally the best option you have is to use [kind](https://kind.sigs.k8s.io/) clusters.
 
-The only prerequisite is having access to a docker runtime and at least 8GB of memory assigned to the docker environment.
+Prerequisites:
 
-1. Fork this repository.
-1. Create the kind clusters:
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- [yq](https://github.com/mikefarah/yq)
+- [kind](https://kind.sigs.k8s.io/)
+- [flux](https://fluxcd.io/flux/cmd/)
 
-    ```shell
-    kind create cluster --config create/production.yaml
-    kind create cluster --config create/staging.yaml
-    kind create cluster --config create/development.yaml
-    ```
+1. For each environment:
+   1. Create the kind clusters:
 
-1. Bootstrap the clusters with FluxCD:
+       ```shell
+       kind create cluster --config create/$ENV_NAME.yaml
+       ```
 
-    ```shell
-    export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/production --context kind-production
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/staging --context kind-staging
-    flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/development --context kind-development
-    ```
+   1. Bootstrap the clusters with FluxCD whilst being mindful of the owner (group path) and repository name:
 
-1. Add the Container Registry secret to the flux-system namespace:
+       ```shell
+       export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
+       flux bootstrap gitlab --token-auth --owner ***REMOVED*** --repository fluxcd-demo --path ./clusters/$ENV_NAME --context kind-$ENV_NAME
+       ```
 
-    ```shell
-    export GITLAB_USERNAME=<gitlab login email>
-    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-production
-    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-staging
-    kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-development
-    ```
+   1. Add the Container Registry secret to the `flux-system` namespace so that the platform components can be pulled:
+
+       ```shell
+       export GITLAB_USERNAME=<gitlab login email>
+       kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="$GITLAB_USERNAME" --docker-password="$GITLAB_TOKEN" --namespace flux-system --context kind-$ENV_NAME
+       ```
 
 1. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
+
+Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
 
 ### Clean Up
 
@@ -631,3 +632,5 @@ kind delete cluster --name staging
 kind delete cluster --name production
 kind delete cluster --name development
 ```
+
+Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task delete`.
