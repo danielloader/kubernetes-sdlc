@@ -289,9 +289,9 @@ The shared responsibility in this scenario can be summarised as follows:
 
 ### FluxCD - An Introduction
 
-So with FluxCD v2 selected for the project, here's a high level view of how FluxCD works:
+So with FluxCD v2 selected for the project, here's a high level view of how FluxCD works in the context to making changes to a system:
 
-![gitops pull workflow using FluxCD](docs/gitops-pull.drawio.svg)
+![gitops pull workflow using FluxCD](docs/flux-overview.drawio.svg)
 
 The feedback loop described by the diagram above works as follows:
 
