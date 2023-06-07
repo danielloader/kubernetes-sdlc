@@ -681,3 +681,5 @@ kind delete cluster --name development
 ```
 
 Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task delete`.
+
+---
