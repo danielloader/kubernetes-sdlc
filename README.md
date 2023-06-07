@@ -17,12 +17,12 @@ This repository exists to store a working proof of concept and notes around how 
       - [Sandbox Environments](#sandbox-environments)
     - [GitOps from a Platform Team Perspective](#gitops-from-a-platform-team-perspective)
       - [Source of Truth](#source-of-truth)
-      - [Platform Sandboxes](#platform-sandboxes)
+      - [Creating Platform Sandboxes](#creating-platform-sandboxes)
     - [GitOps from a Development Team Perspective](#gitops-from-a-development-team-perspective)
     - [Deleting a Cluster](#deleting-a-cluster)
   - [Working Examples](#working-examples)
     - [Deployment](#deployment)
-    - [Clean up](#clean-up)
+    - [Clean Up](#clean-up)
 
 > **NOTE**: _High level goals and progress can be tracked against the [goals](GOALS.md) page._
 
@@ -476,7 +476,7 @@ Here are some starting point recommendations for cluster types:
 
   The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. 
 
-#### Platform Sandboxes
+#### Creating Platform Sandboxes
 
 Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
@@ -507,7 +507,7 @@ spec:
 
 Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
 
-1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in.
+1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in:
 
    - Kubernetes control plane version being incremented.
    - Core EKS addons versions.
@@ -551,7 +551,7 @@ Pushing those changes from Deployment to Staging is a case of tagging the main b
 
 Finally pushing from staging to Production is a case of incrementing the tagged platform artifact in the OCIRepository object in Production.
 
-Each stage is slightly more gated than the last:
+To summarise, each stage is slightly more gated than the last:
 
 - Development runs against a git branch (main) and this encourages the main branch of the repository to remain in a "deployable" state.
 - Staging has some autonomy to track incrementing artifact versions as and when tagging of the main branch takes place.
@@ -620,7 +620,7 @@ The only prerequisite is having access to a docker runtime and at least 8GB of m
 
 4. Now your clusters will be following the state of this repository, as dictated by the `clusters/` directory.
 
-### Clean up
+### Clean Up
 
 Since these clusters are local, with no external state being deployed you can safely delete the kind clusters without removing anything flux has provisioned:
 
