@@ -17,13 +17,19 @@ tasks:
     internal: true
     cmds:
     - kind create cluster --config "{{.CLUSTER_CONFIG_PATH}}" --wait 60s
-    - kubectl create secret docker-registry platform-repository --docker-server=registry.gitlab.com --docker-username="{{.GITLAB_USERNAME}}" --docker-password="{{.GITLAB_TOKEN}}" --namespace flux-system --context kind-{{.CLUSTER_NAME}}
     - flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team  --repository fluxcd-demo --path "./clusters/{{.CLUSTER_NAME}}" --context kind-{{.CLUSTER_NAME}}
+    - |
+      if [ -z "{{.OCI_PLATFORM}}" ]
+      then 
+        kubectl create secret docker-registry platform-repository -n flux-system --docker-server=registry.gitlab.com --docker-username="{{.GITLAB_USERNAME}}" --docker-password="{{.GITLAB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
+      else
+        kubectl create secret generic platform-repository -n flux-system --from-literal=username=git --from-literal=password="{{.GITLAB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
+      fi
     vars:
       CLUSTER_NAME:
         sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
     status:
-    - kubectl cluster-info --context kind-{{.CLUSTER_NAME}}
+    - flux check --context kind-{{.CLUSTER_NAME}}
 
   delete-cluster:
     internal: true
@@ -33,14 +39,17 @@ tasks:
       CLUSTER_NAME:
         sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
 
+
   create:
     deps:
     - task: create-cluster
       vars: 
         CLUSTER_CONFIG_PATH: "create/production.yaml"
+        OCI_PLATFORM: true
     - task: create-cluster
       vars: 
         CLUSTER_CONFIG_PATH: "create/staging.yaml"
+        OCI_PLATFORM: true
     - task: create-cluster
       vars: 
         CLUSTER_CONFIG_PATH: "create/development.yaml"
