@@ -272,7 +272,7 @@ On top of that your applications shouldn't be providing their own cluster wide s
 
 Hanging off the back of the point around CRDs being cluster wide - you should strive to put all your application objects into a singular namespace to eliminate namespace collisions in clusters being used by multiple people or teams. Namespaces being over used leads to complications on RBAC and network security policies, as well as any needed IRSA IAM roles that need to be provisioned in the application namespace to deploy external cloud resources.
 
-_Keep it simple.
+_Keep it simple._
 
 In addition to packaging your applications with Helm, you may find simpler stacks aren't needing such customised deployments and don't necessitate the heavy weight overheard of building and maintaining a helm chart. In those scenarios you should look to just use Kustomize, and specifically the FluxCD kustomization controller to deploy "bare" manifests, or manifests with some small patches.
 
