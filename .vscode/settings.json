@@ -8,5 +8,8 @@
         "kustomization",
         "kustomizations",
         "kustomize"
-    ]
+    ],
+    "markdownlint.config": {
+        "MD046": false
+    }
 }

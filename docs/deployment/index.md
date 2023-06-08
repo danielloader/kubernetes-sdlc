@@ -1,8 +1,8 @@
 # Deployment
 
-To demo multi cluster workflows locally the best option you have is to use [kind](https://kind.sigs.k8s.io/) clusters.
+This repository includes a locally deployable set of instances for exploration and testing.
 
-Prerequisites:
+You are required to have the following tools installed before continuing:
 
 - [Docker](https://www.docker.com/products/docker-desktop/)
 - [yq](https://github.com/mikefarah/yq)

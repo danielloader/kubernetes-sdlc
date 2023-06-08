@@ -1,7 +1,8 @@
 # Creation of Local Environments
 
 !!! tip
-  Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
+
+    Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
 
 1. Create the clusters:
 
