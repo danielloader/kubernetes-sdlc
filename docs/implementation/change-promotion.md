@@ -154,7 +154,7 @@ Sandbox Types:
 | Performance Testing | You would track the same semver or tag version as the source environment/cluster when cloning an environment. Since you are not intending to merge changes back to the source cluster you do not need to branch from main. As such simply copying a cluster directory and bootstrapping it onto a new cluster is sufficient to get going. |
 | Platform Changes    | The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. |
 
-### Creating Platform Sandboxes
+### Using Platform Sandboxes
 
 Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
@@ -277,6 +277,10 @@ _Keep it simple.
 In addition to packaging your applications with Helm, you may find simpler stacks aren't needing such customised deployments and don't necessitate the heavy weight overheard of building and maintaining a helm chart. In those scenarios you should look to just use Kustomize, and specifically the FluxCD kustomization controller to deploy "bare" manifests, or manifests with some small patches.
 
 Finally, mocks have a mixed reputation but if you can deploy a single application component in isolation with some mocks to test some functionality - if it makes sense to do so, you should.
+
+### Using Application Sandboxes
+
+__for tomorrow__
 
 ## Deleting a Sandbox
 
