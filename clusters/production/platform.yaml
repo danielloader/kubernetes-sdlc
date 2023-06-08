@@ -44,6 +44,8 @@ metadata:
   name: platform-service-configs
   namespace: flux-system
 spec:
+  dependsOn:
+  - name: platform-services
   interval: 1m
   path: ./platform/service-configs
   prune: true
