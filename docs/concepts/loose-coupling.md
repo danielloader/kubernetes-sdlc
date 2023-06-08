@@ -16,7 +16,7 @@ FluxCD offers two ways to handle coupling of components when applied to a cluste
 - Direct dependencies that force ordering of reconciliation.
 - Indirect dependencies that fail open and operate safely with a race condition, waiting for the resource to exist before the HelmChart or similar can install.
 
-They are pros and cons to both methods; direct dependencies are explicit. Take this example:
+There are pros and cons to both methods; direct dependencies are explicit. Take this example:
 
 ```yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1
