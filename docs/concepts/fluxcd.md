@@ -1,8 +1,8 @@
 # FluxCD - An Introduction
 
-So with FluxCD v2 selected for the project, here's a high level view of how FluxCD works in the context to making changes to a system:
+So with FluxCD selected for the project, here's a high level view of how FluxCD works in the context to making changes to a system:
 
-![gitops pull workflow using FluxCD](../images/flux-overview.drawio.svg)
+![gitops pull workflow using FluxCD](../images/fluxcd-overview.drawio.svg){ align=right }
 
 The feedback loop described by the diagram above works as follows:
 
