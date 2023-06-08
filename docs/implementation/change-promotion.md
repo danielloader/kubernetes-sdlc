@@ -93,7 +93,7 @@ Before making changes to a cluster it is worth talking about the differences bet
 
 > **NOTE:** _Long lived stable clusters **should** track against OCI artifacts. The exception to the rule would be a canary cluster that is just representing the state of `main` branches across the stacks to give you an oversight into the health of the system without any users suffering broken environments. Such an environment would represent the minimum scaling of the cluster for cost reasons, and be non-interactive other than to emit errors to your logging platform._
 
-Taking the example below of [`./clusters/production/platform.yaml`](clusters/production/platform.yaml) the behaviour the resulting configuration would have in the host cluster:
+Taking the example below of `./clusters/production/platform.yaml` the behaviour the resulting configuration would have in the host cluster:
 
 ```yaml
 ---
@@ -124,7 +124,7 @@ spec:
     name: platform
 ```
 
-In this configuration the [`./clusters/production/platform.yaml`](clusters/production/platform.yaml) file is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
+In this configuration the `./clusters/production/platform.yaml` file is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
 
 Additionally there is [semver](https://semver.org/) version tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period. [^semver-tracking] The constraints on this behaviour are defined in the `.spec.ref.semver` value and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) rule set.
 
