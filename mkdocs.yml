@@ -2,6 +2,8 @@ site_name: FluxCD Demo
 site_url: https://***REMOVED***.gitlab.io/cyber/architecture-team/fluxcd-demo/ 
 site_dir: public
 repo_url: https://gitlab.com/***REMOVED***/fluxcd-demo/
+repo_name: fluxcd-demo
+edit_uri: edit/main/docs/
 markdown_extensions:
   - attr_list
   - md_in_html
@@ -13,7 +15,10 @@ markdown_extensions:
       custom_checkbox: true
 theme:
   name: 'material'
+  icon:
+    repo: fontawesome/brands/gitlab
   features:
+  - content.action.edit
   - navigation.expand
   - content.code.copy
   - navigation.indexes 
