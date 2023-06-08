@@ -5,6 +5,7 @@ test:
     name: squidfunk/mkdocs-material
     entrypoint: [""]
   script:
+  - pip install -r plugins.txt
   - mkdocs build --strict --verbose --site-dir test
   artifacts:
     paths:
@@ -18,6 +19,7 @@ pages:
     name: squidfunk/mkdocs-material
     entrypoint: [""]
   script:
+  - pip install -r plugins.txt
   - mkdocs build --strict --verbose
   artifacts:
     paths:

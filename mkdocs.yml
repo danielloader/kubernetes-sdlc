@@ -1,5 +1,48 @@
-site_name: My Docs by GitLab Pages
-site_url: https://pages.gitlab.io/mkdocs
+site_name: FluxCD Demo
+site_url: https://nominet.gitlab.io/cyber/architecture-team/fluxcd-demo/ 
 site_dir: public
+repo_url: https://gitlab.com/nominet/cyber/architecture-team/fluxcd-demo/
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - footnotes
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
 theme:
   name: 'material'
+  features:
+  - content.code.copy
+  - navigation.indexes 
+  - toc.follow
+  - toc.integrate
+  - navigation.instant
+  - navigation.tracking
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - navigation.footer
+nav:
+- Home: index.md
+- Concepts:
+  - concepts/index.md
+  - GitOps: concepts/gitops.md
+  - Kubernetes: concepts/kubernetes.md
+  - FluxCD: concepts/fluxcd.md
+  - Loose Coupling: concepts/loose-coupling.md
+- Implementation:
+  - implementation/index.md
+  - Git Repositories: implementation/repo-layout.md
+  - Change Promotion: implementation/change-promotion.md
+  - External Recources: implementation/external-resources.md
+- Deployment:
+  - deployment/index.md
+  - Prerequisites: deployment/prerequisites.md
+  - Create: deployment/create.md
+  - Examples: deployment/examples.md
+  - Destroy: deployment/destroy.md
+
+plugins:
+  - search
