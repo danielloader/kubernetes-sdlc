@@ -7,6 +7,8 @@ Coupling in the kubernetes sense is a two part subject:
 - Internal component coupling - Custom Resource Definitions, ConfigMaps and Secrets needing to exist before Objects referencing them.
 - External component coupling - [IAM](https://aws.amazon.com/iam/getting-started/) roles needing to exist with the right trust relationship to a [OIDC provider](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html) to permit [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) access from a Service Account.
 
+Due to the fact coupling is so contentious when creating a layered system the best option is to have some blind faith the resource you're calling for and relying on exists - and if it doesn't you need to fail safely and report the status of the failure so make debugging easier. All projects should accept transient failures in components and handle them gracefully where possible, especially on kubernetes. If this isn't possible you will need to implement some health-checking logic in an initContainer to prevent the start of your pod.
+
 ## Internal Components
 
 FluxCD offers two ways to handle coupling of components when applied to a cluster:
@@ -45,7 +47,7 @@ IRSA role ARN annotations on Service Accounts would be the most common example, 
 
 With this example you are forced into extremely tight coupling but indirectly - predictable ARNs for role names for example. You can't know the ARN of the service created for sure, so helm charts will need to guess when creating service account annotations.
 
-To aid in this problem you can bootstrap the cluster with a ConfigMap at creation time to include variables that can be used by Kustomization and HelmRelease objects to inject variables into YAML. 
+To aid in this problem you can bootstrap the cluster with a ConfigMap at creation time to include variables that can be used by Kustomization and HelmRelease objects to inject variables into YAML.
 
 On EKS the primary beneficial minimum values you would want to include would be:
 
