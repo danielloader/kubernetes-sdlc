@@ -25,4 +25,6 @@ All of these options follow a similar pattern:
 
 In addition to the initial provisioning the controller owns the full lifecycle of the resource, and deletion of the Cloud custom object should delete the object via finaliser. This allows a parent HelmRelease object to own both the in cluster compute resources and the external resources and can clean up both.
 
+This process is especially fruitful when you have to combine deployment of resources with security groups in AWS, being able to do so in lock step, and clean them up retroactively on deletion to avoid hanging security groups populating the VPC. Then you can use the returned secrets value for the security group Id to populate the annotation in the deployment helm chart so that the pod can start with the correct security group attached to the pod elastic network interface.
+
 This model might be the only sane model on how to combine kubernetes resources and managed external resources - it has its own challenges but it couples the internal and external resources over a Secret object and ties their life cycles together to installing and uninstalling an application.
