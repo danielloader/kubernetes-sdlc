@@ -50,7 +50,7 @@ A _pull workflow_ where in these changes are stored in the repository but the re
 
 #### Push Based GitOps
 
-![gitops push high level diagram](docs/gitops-push.drawio.svg)
+![gitops push high level diagram](images/gitops-push.drawio.svg)
 
 In a push GitOps the topology changes get promoted to the cluster by way of a push mechanism - primarily in the form of pipelines. Changes in state that the pipelines are configured to listen to subsequently trigger pipelines, this takes the current state in the commit the pipeline operation is referenced to and sets the infrastructure state to match. Common examples:
 
@@ -65,7 +65,7 @@ Due to these pain points and the constant fight against the desire to tinker wit
 
 #### Pull Based GitOps
 
-![gitops pull high level diagram](docs/gitops-pull.drawio.svg)
+![gitops pull high level diagram](images/gitops-pull.drawio.svg)
 
 The pull based GitOps flow builds on the push based and adds in technology that has the job of _constantly_ reconciling state to a known source of truth - if you fiddle with the state of an environment, the controller of the state will revert your changes back to the state stored in the git repository very quickly, fully and with no manual intervention.
 
@@ -93,7 +93,7 @@ In addition to this generalised abstraction it is worthwhile to acknowledge kube
 
 It is perhaps advisable to think of kubernetes as a bucket of poorly sorted lego - all the bricks have a contract where in they promise to click together with another brick but the blocks themselves do not dictate the final product. Kubernetes is much the same, the components are thoroughly tested to maintain compatibility guarantees but there is no single prescribed way to set up a cluster.
 
-![kubernetes high level diagram](docs/kubernetes-layers.drawio.svg)
+![kubernetes high level diagram](images/kubernetes-layers.drawio.svg)
 
 In this diagram, kubernetes exerts influence in the red boxes, resting on a linux distribution in purple, itself resting on any abstraction of linux installations; bare metal, virtual machines, cloud instances, which ultimately exist somewhere as physical tin.
 
@@ -113,7 +113,7 @@ To a developer a kubernetes cluster installed on RHEL 7, 8 and 9 as the underlyi
 
 In addition to this abstraction and isolation principle, kubernetes at its core is a state reconciliation engine. This is _extremely_ important to grok as it might be the most profound and instrumental design choice around the entire ecosystem and it has to be taken into account when designing workloads that are intended to be deployed in a cluster - and failure to account for this design paradigm leads to extremely fragile runtime outcomes.
 
-![state reconciliation cycle](docs/kubernetes-state-design.drawio.svg)
+![state reconciliation cycle](images/kubernetes-state-design.drawio.svg)
 
 While it is not a particularly complex system to grasp, it is one infrastructure engineers have been battling since the first person decided to have multiple replicas of a server running in a group and having the audacity to want them to be somewhat similarly configured.
 
@@ -201,13 +201,13 @@ Even if you answer all these questions in the direction that would naturally lea
 
 - **Hashicorp Nomad**
 
-  [Hashicorp Nomad](https://developer.hashicorp.com/nomad/docs/nomad-vs-kubernetes) exists as a alternative to Kubernetes.
+  [Hashicorp Nomad](https://developer.hashicorp.com/nomad/images/nomad-vs-kubernetes) exists as a alternative to Kubernetes.
 
   It is not exclusively focused on containerised workloads; as it can support virtualised, containerised and stand alone applications - this allows you to skip a requirement from the above considerations block.
 
   Nomad strives to offer less, but do it better - and in some workloads this is an ideal compromise, the difficulty comes from the fact it is a niche and not well adopted solution to the problem which can make hiring for it more difficult and time consuming.
 
-  As of the time of writing it has not adopted the [operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) pattern that is making kubernetes work for many organisations and this is a considerable feature gap.
+  As of the time of writing it has not adopted the [operator](https://kubernetes.io/images/concepts/extend-kubernetes/operator/) pattern that is making kubernetes work for many organisations and this is a considerable feature gap.
 
   Though anyone familiar with kubernetes should have enough baseline knowledge to work with Nomad to offset the niche nature of the product.
 
@@ -280,7 +280,7 @@ An attempt has been made to draw up a topology in this repository that represent
 
 Having made dozens of passes at this problem before writing up to this point I have settled on this high level cognitive split, a shared responsibility model of sorts.
 
-![repository structure high level diagram](docs/repository-directory-structure.drawio.svg)
+![repository structure high level diagram](images/repository-directory-structure.drawio.svg)
 
 The shared responsibility in this scenario can be summarised as follows:
 
@@ -291,7 +291,7 @@ The shared responsibility in this scenario can be summarised as follows:
 
 So with FluxCD v2 selected for the project, here's a high level view of how FluxCD works in the context to making changes to a system:
 
-![gitops pull workflow using FluxCD](docs/flux-overview.drawio.svg)
+![gitops pull workflow using FluxCD](images/flux-overview.drawio.svg)
 
 The feedback loop described by the diagram above works as follows:
 
@@ -345,7 +345,7 @@ Most change systems will encourage you to make changes at least impactful end of
 
 Consider this pyramid where in production has many users (who matter the most as they pay for the service), staging as the next largest user base, then development and finally a sandbox which ideally has one engineer or one team as its user base.
 
-![change cost](docs/change-cost.drawio.svg)
+![change cost](images/change-cost.drawio.svg)
 
 This methodology where the development environment is a constantly shifting foundation of potentially broken infrastructure is an **anti pattern**.
 
@@ -380,7 +380,7 @@ Due to this conservative nature of removing services it would be prudent to be c
 
 In the shared responsibility model talked about prior the platform team gets a hybrid ownership model depending on the scope of their cluster deployment.
 
-![platform-as-a-service](docs/platform-as-a-service.drawio.svg)
+![platform-as-a-service](images/platform-as-a-service.drawio.svg)
 
 In a cloud environment the kubernetes control plane is more than likely to be under the control of the cloud provider by way of a managed service - however that is only a minority of the ownership scope. There is still infrastructure as code modules that have to be maintained to deploy the cloud managed cluster service and all the secondary and tertiary cloud components to make up the platform in its entirety.
 
@@ -389,8 +389,8 @@ In a cloud environment the kubernetes control plane is more than likely to be un
 If you take this model with everything resting on the kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will likely be:
 
 1. Upstream kubernetes upgrades are mandated with a breaking change; often promotion of beta APIs to stable or hard removal of alpha and beta API groups.
-2. Upstream [Helm charts](https://helm.sh/docs/topics/charts/) that rely on those core APIs will also change and often take the opportunity to include breaking changes when their underlying APIs change.
-3. Applications deployed on the cluster will also need to take into account these changing APIs; e.g. [Kyverno](https://kyverno.io/docs/introduction/) policies, Application Load Balancer controller annotations, storage class changes etc.
+2. Upstream [Helm charts](https://helm.sh/images/topics/charts/) that rely on those core APIs will also change and often take the opportunity to include breaking changes when their underlying APIs change.
+3. Applications deployed on the cluster will also need to take into account these changing APIs; e.g. [Kyverno](https://kyverno.io/images/introduction/) policies, Application Load Balancer controller annotations, storage class changes etc.
 
 As you can ascertain the changes at the bottom of the platform are often felt entirely through the stack, as is the nature of foundational changes. Often third parties will attempt to minimise the pain felt by such changes by abstracting the changes in the intermediate layers thereby leaving the application layer none the wiser about the changes below, but this is far from certain.
 
@@ -482,7 +482,7 @@ Here are some starting point recommendations for cluster types:
 
 Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
-![sandbox promotion](docs/change-promotion-platform-a.drawio.svg)
+![sandbox promotion](images/change-promotion-platform-a.drawio.svg)
 
 The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
 
@@ -524,7 +524,7 @@ Next step is provisioning your infrastructure as code template to create a worki
     <details>
     <summary>How Flux Boostraps</summary>
 
-    ![flux bootstrap sequence](docs/fluxcd-bootstrap.drawio.svg)
+    ![flux bootstrap sequence](images/fluxcd-bootstrap.drawio.svg)
 
     1. Install the FluxCD controller objects into the cluster.
     1. Create a `GitRepository` object that references the flags in the bootstrap command.
@@ -547,13 +547,13 @@ Next step is provisioning your infrastructure as code template to create a worki
 
 1. Raise pull request to merge this state into main.
 
-    ![sandbox promotion](docs/change-promotion-platform-b.drawio.svg)
+    ![sandbox promotion](images/change-promotion-platform-b.drawio.svg)
 
 1. Monitor the change reconciliation and deployment on the deployment cluster.
 1. Adjust any infrastructure as code values for the development cluster to align it to the sandbox. _These must be non-destructive changes._
 1. Pushing those changes from Deployment to Staging is a case of tagging the main branch containing the platform components to create an OCI artifact, which gets automatically applied to staging if it is a minor or patch version increment or manually if there are breaking major changes by virtue of changing the OCIRepository object semver range.
 
-    ![sandbox promotion](docs/change-promotion-platform-c.drawio.svg)
+    ![sandbox promotion](images/change-promotion-platform-c.drawio.svg)
 
 Finally pushing from staging to Production is a case of incrementing the tagged platform artifact in the OCIRepository object in Production.
 
@@ -567,7 +567,7 @@ To summarise, each stage is slightly more gated than the last:
 
 Congratulations, as a development team your only concern is around the application layer - and while that is not devoid of danger, it is however a lot fewer moving parts to worry about and the ones you do have to are somewhat in your gift to control and change.
 
-At a high level applications are deployed in the same manner as services are in the platform tier; either as helm charts or [kustomized](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/) manifests.
+At a high level applications are deployed in the same manner as services are in the platform tier; either as helm charts or [kustomized](https://kubernetes.io/images/tasks/manage-kubernetes-objects/kustomization/) manifests.
 
 In contrast to the platform team, having a repository which owns cluster stacks and the infrastructure as code to deploy these stacks, the application teams are encouraged to make repositories per application. Furthermore the definition of an application is fuzzy, especially in the era of microservices which have sometimes tightly coupled functionality mandating cohabitating deployments.
 
