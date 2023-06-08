@@ -47,7 +47,6 @@ nav:
 - Deployment:
   - deployment/index.md
   - Create: deployment/create.md
-  - Examples: deployment/examples.md
   - Destroy: deployment/destroy.md
 plugins:
   - search
