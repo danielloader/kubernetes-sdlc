@@ -139,25 +139,20 @@ Here are some starting point recommendations for cluster types:
 
 [^semver-tracking]: If you push a `0.0.3` tagged OCI artifact, and `0.0.2` is currently running in the cluster, then the rules above would download the `0.0.3` artifact and trigger reconciliation on the downstream dependencies that use this OCIRepository source.
 
-- **Production**
+Long Lived Types:
 
-  Static artifact reference this cluster is a _known_ state at a glance - a fixed tag. (`1.2.3`)
+| Environments        | Notes |
+| --------------------| ----- |
+| Production          | Static artifact reference this cluster is a _known_ state at a glance - a fixed tag. (`1.2.3`) |
+| Staging             | Somewhat automatic patching this cluster should use a semver range filter and automatically deploy non breaking changes. (`1.2.x` or `1.x.x`) |
+| Deployment          | Tracks the `main` branch of the platform stack, with main being considered a rolling source of truth of a working sack. Will by its nature be usually ahead of tagged releases in staging and production, but not always. It is entirely possible that version `1.2.3` is deployed simultaneously to production, staging and development if changes haven't been made in a long time and the last commit in the main branch is also `1.2.3`. |
 
-- **Staging**
-  
-  Somewhat automatic patching this cluster should use a semver range filter and automatically deploy non breaking changes. (`1.2.x` or `1.x.x`)
+Sandbox Types:
 
-- **Deployment**
-  
-  Tracks the `main` branch of the platform stack, with main being considered a rolling source of truth of a working sack. Will by its nature be usually ahead of tagged releases in staging and production, but not always. It is entirely possible that version `1.2.3` is deployed simultaneously to production, staging and development if changes haven't been made in a long time and the last commit in the main branch is also `1.2.3`.
-
-- **Sandbox - Performance Testing**
-  
-  You would track the same semver or tag version as the source environment/cluster when cloning an environment. Since you are not intending to merge changes back to the source cluster you do not need to branch from main. As such simply copying a cluster directory and bootstrapping it onto a new cluster is sufficient to get going.
-
-- **Sandbox - Platform Changes**
-
-  The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster.
+| Environments        | Notes |
+| --------------------| ----- |
+| Performance Testing | You would track the same semver or tag version as the source environment/cluster when cloning an environment. Since you are not intending to merge changes back to the source cluster you do not need to branch from main. As such simply copying a cluster directory and bootstrapping it onto a new cluster is sufficient to get going. |
+| Platform Changes    | The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. |
 
 ### Creating Platform Sandboxes
 
@@ -247,7 +242,7 @@ While there is not a hard and fast definition in this area a good starting point
 
     It is entirely possible to have nested HelmRelease objects in flux, as the controller listens cluster-wide for objects. This means you can have an "application" that is just a collection of HelmRelease and HelmRepository objects that bring in smaller components and cohabitate them into a single namespace and have a parent object to allow full deletion cleanly of a stack.
 
-In this repository there is the fluxCD default testing helm chart `podinfo` as an example of deploying a chart from another repository.
+In this repository there is the FluxCD default testing helm chart `podinfo` as an example of deploying a chart from another repository.
 
 > **_NOTES FOR LATER_**
 >

@@ -7,8 +7,8 @@ So with FluxCD selected for the project, here's a high level view of how FluxCD 
 The feedback loop described by the diagram above works as follows:
 
 1. You make a change to a YAML file(s) and commit your changes and push them to a git repository.
-1. The fluxCD source controller periodically pulls the repository from git.
-1. The fluxCD kustomize and helm controllers run dry run speculative applies looking for changes if the source commit hash changes.
+1. The FluxCD source controller periodically pulls the repository from git.
+1. The FluxCD kustomize and helm controllers run dry run speculative applies looking for changes if the source commit hash changes.
 1. Any changes detected get reconciled with any sub-object in the cluster that the root controller controls.
 1. These reconciled states are now visible to the developer in their local IDE or kubernetes resource viewer _(k9s, lens etc)_.
 
@@ -41,6 +41,6 @@ In FluxCD bootstrapping is the concept of kick starting the reconciliation loop,
 
 1. Install the FluxCD controller objects into the cluster.
 1. Create a `GitRepository` object that references the flags in the bootstrap command.
-1. Add top level root `Kustomization` object to track itself, the fluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
+1. Add top level root `Kustomization` object to track itself, the FluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
 1. These two objects are then committed and pushed to git and then the same objects are pushed to the kubernetes cluster to start the loop.
 1. Finally you can see the reconciliation steps taking place in the cluster with external tooling.
