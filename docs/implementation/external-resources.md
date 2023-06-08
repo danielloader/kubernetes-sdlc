@@ -23,3 +23,6 @@ All of these options follow a similar pattern:
 
 ![external resource controllers](../images/external-resource-controllers.drawio.svg)
 
+In addition to the initial provisioning the controller owns the full lifecycle of the resource, and deletion of the Cloud custom object should delete the object via finaliser. This allows a parent HelmRelease object to own both the in cluster compute resources and the external resources and can clean up both.
+
+This model might be the only sane model on how to combine kubernetes resources and managed external resources - it has its own challenges but it couples the internal and external resources over a Secret object and ties their life cycles together to installing and uninstalling an application.
