@@ -1,9 +1,12 @@
 
 test:
   stage: test
-  image: squidfunk/mkdocs-material
+  image: 
+    name: squidfunk/mkdocs-material
+    entrypoint:
+      - "/bin/sh"
   script:
-  - build --strict --verbose --site-dir test
+  - mkdocs build --strict --verbose --site-dir test
   artifacts:
     paths:
     - test
@@ -12,9 +15,12 @@ test:
 
 pages:
   stage: deploy
-  image: squidfunk/mkdocs-material
+  image: 
+    name: squidfunk/mkdocs-material
+    entrypoint:
+      - "/bin/sh"
   script:
-  - build --strict --verbose
+  - mkdocs build --strict --verbose
   artifacts:
     paths:
     - public
