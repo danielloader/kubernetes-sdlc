@@ -13,6 +13,10 @@ output:
     error_only: false
 
 tasks:
+  serve:
+    cmds:
+    - docker run --rm -it -p 8000:8000 -v ${PWD}:/docs $(docker build -q . -f Dockerfile.local)
+    interactive: true
   create-cluster:
     internal: true
     cmds:
@@ -30,7 +34,6 @@ tasks:
         sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
     status:
     - flux check --context kind-{{.CLUSTER_NAME}}
-
   delete-cluster:
     internal: true
     cmds:
@@ -38,8 +41,6 @@ tasks:
     vars:
       CLUSTER_NAME:
         sh: yq '.name' < "{{.CLUSTER_CONFIG_PATH}}"
-
-
   create:
     deps:
     - task: create-cluster
@@ -55,8 +56,6 @@ tasks:
         CLUSTER_CONFIG_PATH: "create/development.yaml"
     cmds:
     - echo "Deployed!"
-
-
   delete:
     cmds:
     - task: delete-cluster
