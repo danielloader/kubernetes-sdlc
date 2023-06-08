@@ -39,7 +39,6 @@ nav:
   - External Recources: implementation/external-resources.md
 - Deployment:
   - deployment/index.md
-  - Prerequisites: deployment/prerequisites.md
   - Create: deployment/create.md
   - Examples: deployment/examples.md
   - Destroy: deployment/destroy.md
