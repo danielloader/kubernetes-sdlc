@@ -45,7 +45,6 @@ The common practice of compromising and utilising staging as a production testin
 - Performance testing is often pushing the limits of the system, which incurs breakages and since the staging environment is shared between multiple teams this can become problematic.
 - Testing suites often require a known state to run tests against; pre-populated databases etc. A drift away from this stateful but known state can impact performance outcomes.
 
-
 ## Platform Sandboxes
 
 At a high level the operational workflow of a platform team is different to a development team but shares many similarities. Much like a microservice having users and thus needing to maintain a contract between client and server, platform teams have a formalised contract of services they provide that can be utilised by application teams.
@@ -261,7 +260,6 @@ In this repository there is the fluxCD default testing helm chart `podinfo` as a
 > - [ ] Trade-offs between helm charts and raw manifests installed via kustomize.
 > - [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
 > - [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
-
 
 ## Deleting a Sandbox
 

@@ -1,10 +1,7 @@
 # Creation of Local Environments
 
 !!! tip
-    
-    Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
-
-
+  Alternatively if you have [taskfile](https://taskfile.dev/) installed - `task create`.
 
 1. Create the clusters:
 
@@ -57,4 +54,3 @@ platform-configs           47m   True    Applied revision: main@sha1:32f862f2e10
 platform-service-configs   47m   True    Applied revision: main@sha1:32f862f2e10fbaf1f10ff915a6b5b3954ca17037
 platform-services          47m   True    Applied revision: main@sha1:32f862f2e10fbaf1f10ff915a6b5b3954ca17037
 ```
-
