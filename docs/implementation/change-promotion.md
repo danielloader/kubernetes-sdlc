@@ -244,16 +244,39 @@ While there is not a hard and fast definition in this area a good starting point
 
 In this repository there is the FluxCD default testing helm chart `podinfo` as an example of deploying a chart from another repository.
 
-> **_NOTES FOR LATER_**
->
-> - [ ] Cover helm release semver ranges; patch for production, minor for staging and major for development.
-> - [ ] Cover container image deployments best practices - tagging etc.
-> - [ ] Cover best practices and talk about 12 factor apps.
-> - [ ] Emphasise loose decoupling of services, make assumptions the platform is providing things rather than provide them yourself. e.g. Confluent for Kubernetes operators.
-> - [ ] Try to make your application namespace agnostic, and deploy _all_ the components in the same namespace for portability.
-> - [ ] Trade-offs between helm charts and raw manifests installed via kustomize.
-> - [ ] Emphasise the differences between an application and components of the application. Explain trade-offs between stand alone "external" components vs application components.
-> - [ ] Mocks are really important and key to isolation of deployment, sometimes you just want to deploy and test a single helm chart in isolation.
+Using the same semver range promotion strategy used on the Staging environment you can get FluxCD to auto increment helm releases automatically within the range specified in the HelmRelease objects. Though much like the platform sandboxes for the fastest feedback loops you will find it beneficial to have a GitRepository rather than OCIRepository model for tracking a branch rather than being forced to publish an OCI artifact of a helm chart.
+
+Aside from the helm chart itself, an application likely has to ship some custom source code as a container - and this container has to be packaged and published to a container registry so that the kubernetes cluster can pull it and schedule its execution. If you want to make use of the FluxCD [image controllers](https://fluxcd.io/flux/components/image/) then you would be best served by having semver compliant tags and avoid the use of a latest tag.
+
+Due to this `build push > pull > run` model the developer feedback loop is quite slow when dealing with containers in the traditional sense.
+
+Fortunately there is tooling developed to alleviate some of this slow developer feedback loop pain:
+
+- [telepresence](https://www.telepresence.io/)
+- [devspace](https://www.devspace.sh/)
+- [devpod](https://devpod.sh/)
+
+Essentially all of them have different approaches to try and expose a remote kubernetes experience locally so you can make changes quickly, re-run your code and check how it behaves in a remote kubernetes environment surrounded by the other services you want to interact with.
+
+That being said, even if you have the option of using remote development practices to try and force past the pain of having to rebuild a container image on every code change to check if it works - there's no faster feedback loop than local.
+
+Given that it is helpful in general to adhere to the design patterns documented by the somewhat famous [12 factor](https://12factor.net/) website, which can be described as a manifesto for modern software design practices to aid with development lifecycle and deployment issues.
+
+The loose coupling discussed in a different chapter is applicable here - where in you should have some sort of healthcheck capacity in your workloads so that kubernetes can use readiness and liveness probes to determine the health of the deployment. This manifests in having applications running in the traditional sense but if your lose connectivity to a backend database, while the microservice itself hasn't suffered a runtime fault it should still then provide a failed liveness probe so kubernetes can create an event and subsequently alert operators of the cluster.
+
+On top of that your applications shouldn't be providing their own cluster wide services due to collisions in resources. In the current design of kubernetes the Custom Resource Definition objects are cluster scoped, so even if you wanted to put an application controller in an application deployment - e.g. Confluent for Kubernetes - you wouldn't gain much agility on decoupled upgrade cycles as any breaking changes to the CRD would affect the operation of all the operators on the cluster regardless. So if you need a controller to deploy some components these controllers should live in the platform stack as optional deployments.
+
+!!! note
+
+    If the controller doesn't exist, and the CRDs aren't installed, the expected behaviour is your helm chart should fail to install. That is by design and allows you to raise a ticket with the platform team to rectify the missing dependency in the cluster.
+
+Hanging off the back of the point around CRDs being cluster wide - you should strive to put all your application objects into a singular namespace to eliminate namespace collisions in clusters being used by multiple people or teams. Namespaces being over used leads to complications on RBAC and network security policies, as well as any needed IRSA IAM roles that need to be provisioned in the application namespace to deploy external cloud resources.
+
+_Keep it simple.
+
+In addition to packaging your applications with Helm, you may find simpler stacks aren't needing such customised deployments and don't necessitate the heavy weight overheard of building and maintaining a helm chart. In those scenarios you should look to just use Kustomize, and specifically the FluxCD kustomization controller to deploy "bare" manifests, or manifests with some small patches.
+
+Finally, mocks have a mixed reputation but if you can deploy a single application component in isolation with some mocks to test some functionality - if it makes sense to do so, you should.
 
 ## Deleting a Sandbox
 
