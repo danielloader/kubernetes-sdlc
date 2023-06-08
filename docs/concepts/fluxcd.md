@@ -32,3 +32,15 @@ This isn't because the change itself became less risky but instead because the c
 Increasing confidence levels and reducing risk in changes reduces the cost of change, and reducing the cost of change is the top priority in the vast majority of architectural designs - if only because business needs are constantly changing and the inability to change to meet them is known as technical debt.
 
 Subsequently this allows you to "move fast and break things" and embrace an _agile_ culture around your deliverables. Fear of breaking fragile infrastructure has hamstrung software deployment cadence for as long as infrastructure has been needed to enable value to customers.
+
+## Boostrapping
+
+In FluxCD bootstrapping is the concept of kick starting the reconciliation loop, where in you need to simultaneously put a state in a git repository, as well as a reference to that state in the target kubernetes cluster.
+
+![flux bootstrap sequence](../images/fluxcd-bootstrap.drawio.svg)
+
+1. Install the FluxCD controller objects into the cluster.
+1. Create a `GitRepository` object that references the flags in the bootstrap command.
+1. Add top level root `Kustomization` object to track itself, the fluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
+1. These two objects are then committed and pushed to git and then the same objects are pushed to the kubernetes cluster to start the loop.
+1. Finally you can see the reconciliation steps taking place in the cluster with external tooling.

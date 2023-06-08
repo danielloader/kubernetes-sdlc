@@ -193,19 +193,6 @@ Next step is provisioning your infrastructure as code template to create a worki
     ```
 
 1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
-
-    <details>
-    <summary>How Flux Boostraps</summary>
-
-    ![flux bootstrap sequence](../images/fluxcd-bootstrap.drawio.svg)
-
-    1. Install the FluxCD controller objects into the cluster.
-    1. Create a `GitRepository` object that references the flags in the bootstrap command.
-    1. Add top level root `Kustomization` object to track itself, the fluxCD components are now tracked in the git repository in the `flux-system` directory inside a cluster directory.
-    1. These two objects are then committed and pushed to git and then the same objects are pushed to the kubernetes cluster to start the loop.
-    1. Finally you can see the reconciliation steps taking place in the cluster with external tooling.
-    </details>
-
 1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
 1. Validate the changes are success and meet the requirements.
 1. Destroy the sandbox kubernetes cluster stack. See [deleting a sandbox](#deleting-a-sandbox) for details.
