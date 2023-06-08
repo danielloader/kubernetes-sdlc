@@ -14,14 +14,13 @@ markdown_extensions:
 theme:
   name: 'material'
   features:
+  - navigation.expand
   - content.code.copy
   - navigation.indexes 
   - toc.follow
   - toc.integrate
   - navigation.instant
   - navigation.tracking
-  - navigation.tabs
-  - navigation.tabs.sticky
   - navigation.top
   - navigation.footer
 nav:
