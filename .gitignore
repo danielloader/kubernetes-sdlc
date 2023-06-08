@@ -4,3 +4,4 @@ source/*
 **/.venv
 
 .env
+public
