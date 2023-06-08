@@ -7,6 +7,9 @@ repo_url: https://gitlab.com/***REMOVED***/fluxcd-demo/
 repo_name: fluxcd-demo
 edit_uri: edit/main/docs/
 markdown_extensions:
+  - pymdownx.snippets:
+      base_path: "."
+      check_paths: true
   - tables
   - attr_list
   - md_in_html
