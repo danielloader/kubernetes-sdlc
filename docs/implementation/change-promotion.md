@@ -100,38 +100,13 @@ Before making changes to a cluster it is worth talking about the differences bet
 
     Long lived stable clusters **should** track against OCI artifacts. The exception to the rule would be a canary cluster that is just representing the state of `main` branches across the stacks to give you an oversight into the health of the system without any users suffering broken environments. Such an environment would represent the minimum scaling of the cluster for cost reasons, and be non-interactive other than to emit errors to your logging platform.
 
-Taking the example below of `./clusters/production/platform.yaml` the behaviour the resulting configuration would have in the host cluster:
+Taking the example below of the production cluster and the behaviour the resulting configuration would have in the host cluster:
 
-```yaml
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: OCIRepository
-metadata:
-  name: platform
-  namespace: flux-system
-spec:
-  secretRef:
-    name: platform-repository
-  interval: 1m0s
-  url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
-  ref:
-    semver: 0.0.x
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: platform-services
-  namespace: flux-system
-spec:
-  interval: 1m
-  path: ./platform/services
-  prune: true
-  sourceRef:
-    kind: OCIRepository
-    name: platform
+```yaml title="clusters/production/platform.yaml" linenums="1"
+--8<-- "clusters/production/platform.yaml:repo"
 ```
 
-In this configuration the `./clusters/production/platform.yaml` file is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
+In this configuration the configuration is tracking OCI artifacts produced in a pipeline - they're versioned by git tag which triggers their packaging and submission to the OCI repository.
 
 Additionally there is [semver](https://semver.org/) version tracking, where in you can follow major, minor and patch versions and the latest of which is re-evaluated at the interval period. [^semver-tracking] The constraints on this behaviour are defined in the `.spec.ref.semver` value and they're evaluated against [this](https://github.com/Masterminds/semver#checking-version-constraints) rule set.
 
@@ -164,21 +139,8 @@ The first action with this diagram the first task is creating a branch in this r
 
 In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as development is tracking against main the first change you will need to make is to point the branch reference to track your new branch.
 
-```diff
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: platform
-  namespace: flux-system
-spec:
-  interval: 1m0s
-  ref:
--   branch: main
-+   branch: branch-a
-  secretRef:
-    name: platform-repository
-  url: https://gitlab.com/nominet/cyber/architecture-team/fluxcd-demo.git
+```yaml title="clusters/development/platform.yaml" linenums="1"
+--8<-- "clusters/development/platform.yaml:branch"
 ```
 
 Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
