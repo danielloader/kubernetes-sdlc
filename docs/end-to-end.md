@@ -59,6 +59,24 @@ First task is to imagine the change control flow and quality gates that are betw
 
 ![sandbox promotion](images/change-promotion-platform-a.drawio.svg)
 
+!!! note "Note about Application Sandbox use-cases"
+
+    While this end to end guide is primarily focused on a platform team and their change cycle, it is applicable to application teams with some caveats and simplifications:
+
+    - **You don't need to branch the plaform repository (nor you should have the permissions to do so) in order to provision a sandbox.**
+      
+        This is because you have no need to backport changes into the Development cluster platform components, and it allows you to track the moving but stable state of the Development cluster platform components. If as in this guide you need additional platform components they must go through the platform team change cycle and land on development before they can be synced into the application sandboxes. 
+
+        This may seem long winded but it means you have more confidence on migrating your application level changes back to the Development environment as the platform service components you are working against were deployed there first and identical to your sandbox environment.
+
+    - **By virtue of this you also inherit the platform state from Development.**
+  
+        Because sandboxes are effectively clones of Development that track Developments upstream platform you can keep them running for extended periods of time where it makes sense. Though in addition to this you would need to run the infrastructure as code pipelines that created the sandbox in the first place occasionally to trigger realignment to match the Kubernetes version running in Development.
+
+    - **Change promotion should be a case of adding, upgrading or removing HelmRelease objects in environments.**
+
+      Your applications need to be components, and components get versioned via HelmRelease version values. As such promotion is as simple as promoting those changes up the chain of environments and testing at each waypoint.
+
 ### Provisioning a Platform Sandbox
 
 The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
@@ -115,7 +133,7 @@ Firstly a scaler object, so KEDA knows which deployment to monitor and the appro
 
 !!! note
 
-    In the split responsibility model, it's not for you as a platform engineer to include a `ScaledObject` object with this change request, the goal is to evaluate if KEDA is working as advertised in our cluster environment and as such this allows application teams to craft their own for their own application needs.
+    In the teams isolation model, it's not for you as a platform engineer to include a `ScaledObject` object with this change request, the goal is to evaluate if KEDA is working as advertised in our cluster environment and as such this allows application teams to craft their own for their own application needs.
 
 ```yaml title="scaler.yaml" linenums="1"
 --8<--- "docs/manifests/scaler.yaml"
@@ -128,6 +146,7 @@ Find a balance between rapidly deploying objects to your sandbox and waiting for
 ```yaml title="load-test.yaml" linenums="1"
 --8<--- "docs/manifests/load-test.yaml"
 ```
+
 If all goes well you will get a job running to completion with logs looking similar to the following snippet.
 
 ```shell
@@ -156,3 +175,65 @@ So at this point we're happy with the deployment and the dummy scaling workload 
 
 ### Promoting Changes from Sandboxes to Development
 
+Given the creation of this sandbox started with a branch from `main` it is unsurprising the process to push this change back is in the form of a Merge/Pull request. Raise your request, get some eyes on it, make any changes needed and then merge the resulting outcome.
+
+!!! warning
+
+    It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from either the wrong directory and/or wrong branch.
+
+So what happens next? Well since Development is tracking the `main` branch, after a short while FluxCD's source controller will detect a change at the next interval and pull the changes. After the SHA1 hash of the resulting pulled commit changes the downstream objects relying on this source will trigger their own reconciliation loops.
+
+![sandbox promotion](../images/change-promotion-platform-b.drawio.svg)
+
+After a short while if all goes well the Development cluster will have successfully incorporated your change as defined in YAML in git. If it for whatever reason doesn't go that way, you can either fix forwards with additional changes in the sandbox and re-raise the merge or you can revert the commit and back out of the change.
+
+Both are viable, but try to fix forwards where you can and consider the revert of a commit when the changes have impacted users of the development cluster as unblocking other teams and users is a top priority when trying to navigate the change promotion process.
+
+At this point the change has been promoted to development, any post promotion checking has taken place and the teams who wanted to utilise the service are busy using it in sandboxes of their own automatically as their sandboxes are tracking the main branch of the platform.
+
+### Promoting Changes from Development to Staging/Production
+
+At this point we're reasonably happy with the resulting output in development, an application team has been utilising the service for a few sprints but their work is now complete and they themselves need their application to be promoted from Development to Staging on the path of releasing changes to Production.
+
+![sandbox promotion](../images/change-promotion-platform-c.drawio.svg)
+
+Unlike Development, Staging and Production are running _tagged_ bundles of platform components that are published into an OCI Repository (the same repository you're pushing container images in all likelihood).
+
+Take the below example from this repository:
+
+```yaml title="clusters/staging/platform.yaml" linenums="1"
+---8<--- "clusters/staging/platform.yaml"
+```
+
+FluxCD will be tracking a semver range of patch versions, so if you publish an artifact (which is essentially a .tar.gz bundle of the `platform` directory of this repository) with a tag with an higher patch version, staging will automatically deploy this.
+
+This semi autonomous upgrade behaviour is optional but if you have confidence in your change process and you can rely on patch versioning to be just that, patches, then I'd encourage it.
+
+Once this bundle is running on Staging and any testing has been completed to confirm the state of the system is as desired the next and final step is to promote the change to Production.
+
+Since Production is sacrosanct I would recommend sticking to a fixed tag deployment, so the `.spec.ref.tag` field is fixed to _exactly_ the package you want to run. In addition to putting the final gate on deployment to Production it gives visibility to the platform team what is running on production at any given time. While you get the same outcome using SHA1 hashes on a git branch, those change more frequently and aren't as immediately approachable in the case of an outage.
+
+!!! note
+
+    Final note, you can and should make changes to the platform deployment outside of application team requests, and while it's definitely not always necessary for the platform team to pause promotion of services to production if a team hasn't used them yet - it's definitely preferable. Should the application team decide the request didn't meet their needs it's easier to back a change out of Development, and even Staging than it is once it's in Production.
+
+Congratulations you've taken a feature request from inception to Production.
+
+### Deleting a Sandbox
+
+After the above it's time to clean up.
+
+!!! info
+
+    You should feel comfortable to do so as soon as the merge back to `main`/Development has happened unless you're using it for quick fast follow to fix forward a breaking change in Development.
+
+!!! note
+
+    As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
+
+    It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc). Experiments in this area will come later.
+
+1. Suspend the root FluxCD entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
+1. Delete the application HelmReleases/Kustomization objects - this is to trigger the finalisers to clear down external resources; EBS volumes, ALB etc.
+1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
+1. Destroy the Kubernetes cluster using the infrastructure as code that deployed it initially.
