@@ -69,43 +69,8 @@ To install a service like `keda` you will need to create a YAML manifest of the 
 
     This is just an example for this documentation but most services prefer or mandate to run in their own namespace to make RBAC simpler to implement e.g cert-manager, kyverno.
 
-```yaml title="platform/services/keda.yaml" linenums="1"
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keda
-  labels:
-    toolkit.fluxcd.io/tenant: sre-team
----
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: kedacore
-  namespace: keda
-spec:
-  interval: 30m
-  url: https://kedacore.github.io/charts
----
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
-kind: HelmRelease
-metadata:
-  name: keda
-  namespace: keda
-spec:
-  releaseName: keda
-  chart:
-    spec:
-      chart: keda
-      version: 2.10.2
-      sourceRef:
-        kind: HelmRepository
-        name: kedacore
-  interval: 1h0m0s
-  install:
-    remediation:
-      retries: 3
-  values: {}
+```yaml title="platform/services/keda.yaml (example)" linenums="1"
+--8<--- "docs/manifests/keda.yaml"
 ```
 
 FluxCD will take these three objects, apply them to the cluster and own the reconciliation loop of the objects. 
@@ -115,4 +80,12 @@ FluxCD will take these three objects, apply them to the cluster and own the reco
     The upgrade procedure for most charts would be a version bump in the `.spec.chart.spec.version` value and any changes mandated in the `.spec.values` map.
 
 At this point it would be prudent to deploy an example to confirm the installation of the controller.
+
+```yaml title="scaler.yaml" linenums="1"
+--8<--- "docs/manifests/scaler.yaml"
+```
+
+```yaml title="load-test.yaml" linenums="1"
+--8<--- "docs/manifests/load-test.yaml"
+```
 
