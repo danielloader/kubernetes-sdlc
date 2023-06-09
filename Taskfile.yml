@@ -21,7 +21,7 @@ tasks:
     internal: true
     cmds:
     - kind create cluster --config "{{.CLUSTER_CONFIG_PATH}}" --wait 60s
-    - flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team  --repository fluxcd-demo --path "./clusters/{{.CLUSTER_NAME}}" --context kind-{{.CLUSTER_NAME}}
+    - flux bootstrap github --token-auth --owner danielloader --repository fluxcd-demo --path "./clusters/{{.CLUSTER_NAME}}" --context kind-{{.CLUSTER_NAME}}
     - |
       if [ "{{.OCI_PLATFORM}}" == "true" ]
       then 

@@ -18,7 +18,7 @@ Bootstrap the clusters with FluxCD whilst being mindful of the owner (group path
 
     ```shell
     export GITLAB_TOKEN=<your personal access token with api, write_repo, read_registry scoped roles>
-    flux bootstrap gitlab --token-auth --owner nominet/cyber/architecture-team --repository fluxcd-demo --path ./clusters/$ENV_NAME --context kind-$ENV_NAME
+    flux bootstrap gitlab --token-auth --owner danielloader --repository fluxcd-demo --path ./clusters/$ENV_NAME --context kind-$ENV_NAME
     ```
 
 Add the Container Registry secret to the `flux-system` namespace so that the platform components can be pulled:
