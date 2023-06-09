@@ -8,11 +8,15 @@ Let us imagine a ticket to a platform team where an application team to change t
 
 Framing it as a user story helps frame the use case and deliverable.
 
+---
+
 > **As a** application developer
 >
 > **I want** utilise the [`KEDA`](https://keda.sh/) service to provide [`ScaledObject`](https://keda.sh/docs/2.0/concepts/scaling-deployments/#scaledobject-spec) functionality on deployments
 >
 > **So that** I can deploy a horizontally scaled service
+
+---
 
 !!! note
 
