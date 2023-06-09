@@ -57,7 +57,7 @@ First task is to imagine the change control flow and quality gates that are betw
 - Packaging those changes into a versioned artifact for deployment on staging.
 - Promotion of this package into production.
 
-![sandbox promotion](../images/change-promotion-platform-a.drawio.svg)
+![sandbox promotion](images/change-promotion-platform-a.drawio.svg)
 
 --8<-- "docs/implementation/change-promotion.md:create-sandbox"
 
