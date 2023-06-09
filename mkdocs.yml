@@ -1,9 +1,6 @@
 site_name: FluxCD Demo
-site_url: https://***REMOVED***.gitlab.io/cyber/architecture-team/fluxcd-demo/ 
-site_dir: public
-repo_url: https://gitlab.com/***REMOVED***/fluxcd-demo/
-# site_url: https://danielloader.github.io/fluxcd-demo/
-# repo_url: https://github.com/danielloader/fluxcd-demo
+site_url: https://danielloader.github.io/fluxcd-demo/
+repo_url: https://github.com/danielloader/fluxcd-demo
 repo_name: fluxcd-demo
 edit_uri: edit/main/docs/
 markdown_extensions:
