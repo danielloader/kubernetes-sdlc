@@ -16,7 +16,7 @@ FluxCD offers two ways to handle coupling of components when applied to a cluste
 - Direct dependencies that force ordering of reconciliation.
 - Indirect dependencies that fail open and operate safely with a race condition
   
-  An example would be waiting for the resource to exist before the HelmChart or similar can install, this is commonly found when installing controllers and custom resource objects. The HelmRelease or Kustomization can just keep failing and retrying on the interval period hoping the dependency has been installed concurrently in the background.
+    An example would be waiting for the resource to exist before the HelmChart or similar can install, this is commonly found when installing controllers and custom resource objects. The HelmRelease or Kustomization can just keep failing and retrying on the interval period hoping the dependency has been installed concurrently in the background.
 
 There are pros and cons to both methods; direct dependencies are explicit. Take this example:
 
