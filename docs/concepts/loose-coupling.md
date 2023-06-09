@@ -14,7 +14,9 @@ Due to the fact coupling is so contentious when creating a layered system the be
 FluxCD offers two ways to handle coupling of components when applied to a cluster:
 
 - Direct dependencies that force ordering of reconciliation.
-- Indirect dependencies that fail open and operate safely with a race condition, waiting for the resource to exist before the HelmChart or similar can install.
+- Indirect dependencies that fail open and operate safely with a race condition
+  
+  An example would be waiting for the resource to exist before the HelmChart or similar can install, this is commonly found when installing controllers and custom resource objects. The HelmRelease or Kustomization can just keep failing and retrying on the interval period hoping the dependency has been installed concurrently in the background.
 
 There are pros and cons to both methods; direct dependencies are explicit. Take this example:
 
@@ -41,7 +43,7 @@ You can also do indirect component coupling as cited above, and this is best sui
 
 ## External Components
 
-This is tricker, because the cluster has to lazily assume these objects exist outside of the cluster due to the lack of ability to check.
+This is trickier because the cluster has to lazily assume these objects exist outside of the cluster due to the lack of ability to check at install time.
 
 IRSA role ARN annotations on Service Accounts would be the most common example, where in you have to assume an IAM role has been provisioned outside the account, with the correct trust relationship and scoped to the correct namespace and service account name.
 
