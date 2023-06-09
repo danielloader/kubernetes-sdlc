@@ -6,13 +6,30 @@ metadata:
 spec:
   scaleTargetRef:
     name: podinfo
-  pollingInterval:  5
+  pollingInterval:  15
   cooldownPeriod:   5
-  idleReplicaCount: 0
+  idleReplicaCount: 1
   minReplicaCount:  1
-  maxReplicaCount:  50
+  maxReplicaCount:  25
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:  
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+          - type: Pods
+            value: 10
+            periodSeconds: 15
+          selectPolicy: Max
+        scaleDown:
+          stabilizationWindowSeconds: 3
+          policies:
+          - type: Pods
+            value: 6
+            periodSeconds: 15
+          selectPolicy: Max
   triggers:
   - type: cpu
     metricType: Utilization # Allowed types are 'Utilization' or 'AverageValue'
     metadata:
-      value: "50"
+      value: "90"
