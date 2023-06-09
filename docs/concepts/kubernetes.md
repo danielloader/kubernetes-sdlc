@@ -132,7 +132,7 @@ It is not exclusively focused on containerised workloads; as it can support virt
 
 Nomad strives to offer less, but do it better - and in some workloads this is an ideal compromise, the difficulty comes from the fact it is a niche and not well adopted solution to the problem which can make hiring for it more difficult and time consuming.
 
-As of the time of writing it has not adopted the [operator](https://kubernetes.io/images/concepts/extend-kubernetes/operator/) pattern that is making kubernetes work for many organisations and this is a considerable feature gap.
+As of the time of writing it has not adopted the [operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) pattern that is making kubernetes work for many organisations and this is a considerable feature gap.
 
 Though anyone familiar with kubernetes should have enough baseline knowledge to work with Nomad to offset the niche nature of the product.
 
