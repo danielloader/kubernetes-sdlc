@@ -183,7 +183,7 @@ Given the creation of this sandbox started with a branch from `main` it is unsur
 
 So what happens next? Well since Development is tracking the `main` branch, after a short while FluxCD's source controller will detect a change at the next interval and pull the changes. After the SHA1 hash of the resulting pulled commit changes the downstream objects relying on this source will trigger their own reconciliation loops.
 
-![sandbox promotion](../images/change-promotion-platform-b.drawio.svg)
+![sandbox promotion](images/change-promotion-platform-b.drawio.svg)
 
 After a short while if all goes well the Development cluster will have successfully incorporated your change as defined in YAML in git. If it for whatever reason doesn't go that way, you can either fix forwards with additional changes in the sandbox and re-raise the merge or you can revert the commit and back out of the change.
 
@@ -195,7 +195,7 @@ At this point the change has been promoted to development, any post promotion ch
 
 At this point we're reasonably happy with the resulting output in development, an application team has been utilising the service for a few sprints but their work is now complete and they themselves need their application to be promoted from Development to Staging on the path of releasing changes to Production.
 
-![sandbox promotion](../images/change-promotion-platform-c.drawio.svg)
+![sandbox promotion](images/change-promotion-platform-c.drawio.svg)
 
 Unlike Development, Staging and Production are running _tagged_ bundles of platform components that are published into an OCI Repository (the same repository you're pushing container images in all likelihood).
 
