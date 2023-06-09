@@ -1,8 +1,9 @@
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: load-tester
-  namespace: app-a
+  namespace: default
 spec:
   ttlSecondsAfterFinished: 100
   template:
@@ -10,5 +11,5 @@ spec:
       containers:
       - name: wrk
         image: elswork/wrk
-        args: ["-t", "8", "-c", "8", "-d", "100", "http://podinfo:9898"]
+        args: ["-t", "4", "-c", "12", "-d", "300", "http://podinfo.app-a:9898"]
       restartPolicy: Never
