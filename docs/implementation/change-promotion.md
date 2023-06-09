@@ -49,7 +49,7 @@ The common practice of compromising and utilising staging as a production testin
 
 At a high level the operational workflow of a platform team is different to a development team but shares many similarities. Much like a microservice having users and thus needing to maintain a contract between client and server, platform teams have a formalised contract of services they provide that can be utilised by application teams.
 
-The differences mostly come from the cadence being set externally; kubernetes itself has an upstream release cadence of three times a year. Many core infrastructure services deployed in a kubernetes cluster will be rapidly changing at this point in the kubernetes maturity cycle. As such the work is more heavily weighted on maintenance than providing additional value. Once there is a stable and relied on baseline platform, application teams will struggle to operate if this moves too quickly - this means changes to deprecate services have to be done conservatively and with a long lead time.
+The differences mostly come from the cadence being set externally; Kubernetes itself has an upstream release cadence of three times a year. Many core infrastructure services deployed in a Kubernetes cluster will be rapidly changing at this point in the Kubernetes maturity cycle. As such the work is more heavily weighted on maintenance than providing additional value. Once there is a stable and relied on baseline platform, application teams will struggle to operate if this moves too quickly - this means changes to deprecate services have to be done conservatively and with a long lead time.
 
 Due to this conservative nature of removing services it would be prudent to be conservative on adding services as this incurs additional maintenance burden and adds to the list of services you will need to run through the deprecation cycle at some point in the future.
 
@@ -57,7 +57,7 @@ Due to this conservative nature of removing services it would be prudent to be c
 
 In the shared responsibility model talked about prior the platform team gets a hybrid ownership model depending on the scope of their cluster deployment.
 
-In a cloud environment the kubernetes control plane is more than likely to be under the control of the cloud provider by way of a managed service - however that is only a minority of the ownership scope.
+In a cloud environment the Kubernetes control plane is more than likely to be under the control of the cloud provider by way of a managed service - however that is only a minority of the ownership scope.
 
 There is still infrastructure as code modules that have to be maintained to deploy the cloud managed cluster service and all the secondary and tertiary cloud components to make up the platform in its entirety.
 
@@ -65,21 +65,21 @@ There is still infrastructure as code modules that have to be maintained to depl
 
     While the application layer is out of scope, if you are making changes that you suspect will affect a development team you should deploy application stacks onto your platform sandbox cluster to helm confirm a healthy state is achieved, and if the state isn't - tickets scheduled with the team warning them of upcoming changes that will incur work to be done.
 
-If you take this model with everything resting on the kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will likely be:
+If you take this model with everything resting on the Kubernetes control plane (everything below this is out of scope for the platform team) then the most common breaking change pattern will likely be:
 
-1. Upstream kubernetes upgrades are mandated with a breaking change; often promotion of beta APIs to stable or hard removal of alpha and beta API groups.
+1. Upstream Kubernetes upgrades are mandated with a breaking change; often promotion of beta APIs to stable or hard removal of alpha and beta API groups.
 2. Upstream [Helm charts](https://helm.sh/images/topics/charts/) that rely on those core APIs will also change and often take the opportunity to include breaking changes when their underlying APIs change.
 3. Applications deployed on the cluster will also need to take into account these changing APIs; e.g. [Kyverno](https://kyverno.io/images/introduction/) policies, Application Load Balancer controller annotations, storage class changes etc.
 
 As you can ascertain the changes at the bottom of the platform are often felt entirely through the stack, as is the nature of foundational changes. Often third parties will attempt to minimise the pain felt by such changes by abstracting the changes in the intermediate layers thereby leaving the application layer none the wiser about the changes below, but this is far from certain.
 
-Hopefully this tumultuous but rapid change will settle in due time as maturity takes hold in the design and deployment cycles of the operators that applications leverage, and core kubernetes API groups reach v1 maturity.
+Hopefully this tumultuous but rapid change will settle in due time as maturity takes hold in the design and deployment cycles of the operators that applications leverage, and core Kubernetes API groups reach v1 maturity.
 
-Therefore it is notable that the platform team will be likely at the forefront of the breaking changes and change cycles in a clusters lifecycle. You may even get to a point where application stacks on top of the cluster are quite stable, with very infrequent release schedules for their own internally driven roadmap. This in reality does not markedly reduce the amount of releases a team must make, if only because they will have change thrust upon them from below - directly via kubernetes upgrades and indirectly via shared resources the applications require to run - but these releases will shift to maintenance of a state rather than feature driven deployments.
+Therefore it is notable that the platform team will be likely at the forefront of the breaking changes and change cycles in a clusters lifecycle. You may even get to a point where application stacks on top of the cluster are quite stable, with very infrequent release schedules for their own internally driven roadmap. This in reality does not markedly reduce the amount of releases a team must make, if only because they will have change thrust upon them from below - directly via Kubernetes upgrades and indirectly via shared resources the applications require to run - but these releases will shift to maintenance of a state rather than feature driven deployments.
 
-Aside from the minor and patch version bumping of helm charts in the cluster service deployments, the most common and disruptive task in the platform team would be upgrading the kubernetes control plane itself - at the time of writing the release cadence recently dropped from four releases a year to three, but that still means dealing with this every four months.
+Aside from the minor and patch version bumping of helm charts in the cluster service deployments, the most common and disruptive task in the platform team would be upgrading the Kubernetes control plane itself - at the time of writing the release cadence recently dropped from four releases a year to three, but that still means dealing with this every four months.
 
-The kubernetes control plane has a rolling window of supported API groups which in theory aids the migration and upgrade of clusters. Warnings on deprecation of API groups and object types are made well in advance with some lead times measured in years. This leniency in time pressure around fixing dependencies downstream of the control plane is only useful if you are able to keep on top of the deprecation warnings themselves.
+The Kubernetes control plane has a rolling window of supported API groups which in theory aids the migration and upgrade of clusters. Warnings on deprecation of API groups and object types are made well in advance with some lead times measured in years. This leniency in time pressure around fixing dependencies downstream of the control plane is only useful if you are able to keep on top of the deprecation warnings themselves.
 
 There are tools out there to warn you of upcoming hard deprecations, and when you can expect your cluster state to fail if you upgrade the control plane without changes:
 
@@ -151,7 +151,7 @@ In this branch you will want to clone the Development environment, as it is set 
 
 Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
 
-1. Deploy a new instance of the kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in:
+1. Deploy a new instance of the Kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in:
 
    - Kubernetes control plane version being incremented.
    - Core EKS addons versions.
@@ -167,7 +167,7 @@ Next step is provisioning your infrastructure as code template to create a worki
  <!-- --8<-- [end:create-sandbox] -->
 1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
 1. Validate the changes are success and meet the requirements.
-1. Destroy the sandbox kubernetes cluster stack. See [deleting a sandbox](#deleting-a-sandbox) for details.
+1. Destroy the sandbox Kubernetes cluster stack. See [deleting a sandbox](#deleting-a-sandbox) for details.
 1. Copy the directory back to the source location in the current branch and delete the sandbox directory.
 
     ```shell
@@ -215,7 +215,7 @@ In this repository there is the FluxCD default testing helm chart `podinfo` as a
 
 Using the same semver range promotion strategy used on the Staging environment you can get FluxCD to auto increment helm releases automatically within the range specified in the HelmRelease objects. Though much like the platform sandboxes for the fastest feedback loops you will find it beneficial to have a GitRepository rather than OCIRepository model for tracking a branch rather than being forced to publish an OCI artifact of a helm chart.
 
-Aside from the helm chart itself, an application likely has to ship some custom source code as a container - and this container has to be packaged and published to a container registry so that the kubernetes cluster can pull it and schedule its execution. If you want to make use of the FluxCD [image controllers](https://fluxcd.io/flux/components/image/) then you would be best served by having semver compliant tags and avoid the use of a latest tag.
+Aside from the helm chart itself, an application likely has to ship some custom source code as a container - and this container has to be packaged and published to a container registry so that the Kubernetes cluster can pull it and schedule its execution. If you want to make use of the FluxCD [image controllers](https://fluxcd.io/flux/components/image/) then you would be best served by having semver compliant tags and avoid the use of a latest tag.
 
 Due to this `build push > pull > run` model the developer feedback loop is quite slow when dealing with containers in the traditional sense.
 
@@ -225,15 +225,15 @@ Fortunately there is tooling developed to alleviate some of this slow developer 
 - [devspace](https://www.devspace.sh/)
 - [devpod](https://devpod.sh/)
 
-Essentially all of them have different approaches to try and expose a remote kubernetes experience locally so you can make changes quickly, re-run your code and check how it behaves in a remote kubernetes environment surrounded by the other services you want to interact with.
+Essentially all of them have different approaches to try and expose a remote Kubernetes experience locally so you can make changes quickly, re-run your code and check how it behaves in a remote Kubernetes environment surrounded by the other services you want to interact with.
 
 That being said, even if you have the option of using remote development practices to try and force past the pain of having to rebuild a container image on every code change to check if it works - there's no faster feedback loop than local.
 
 Given that it is helpful in general to adhere to the design patterns documented by the somewhat famous [12 factor](https://12factor.net/) website, which can be described as a manifesto for modern software design practices to aid with development lifecycle and deployment issues.
 
-The loose coupling discussed in a different chapter is applicable here - where in you should have some sort of healthcheck capacity in your workloads so that kubernetes can use readiness and liveness probes to determine the health of the deployment. This manifests in having applications running in the traditional sense but if your lose connectivity to a backend database, while the microservice itself hasn't suffered a runtime fault it should still then provide a failed liveness probe so kubernetes can create an event and subsequently alert operators of the cluster.
+The loose coupling discussed in a different chapter is applicable here - where in you should have some sort of healthcheck capacity in your workloads so that Kubernetes can use readiness and liveness probes to determine the health of the deployment. This manifests in having applications running in the traditional sense but if your lose connectivity to a backend database, while the microservice itself hasn't suffered a runtime fault it should still then provide a failed liveness probe so Kubernetes can create an event and subsequently alert operators of the cluster.
 
-On top of that your applications shouldn't be providing their own cluster wide services due to collisions in resources. In the current design of kubernetes the Custom Resource Definition objects are cluster scoped, so even if you wanted to put an application controller in an application deployment - e.g. Confluent for Kubernetes - you wouldn't gain much agility on decoupled upgrade cycles as any breaking changes to the CRD would affect the operation of all the operators on the cluster regardless. So if you need a controller to deploy some components these controllers should live in the platform stack as optional deployments.
+On top of that your applications shouldn't be providing their own cluster wide services due to collisions in resources. In the current design of Kubernetes the Custom Resource Definition objects are cluster scoped, so even if you wanted to put an application controller in an application deployment - e.g. Confluent for Kubernetes - you wouldn't gain much agility on decoupled upgrade cycles as any breaking changes to the CRD would affect the operation of all the operators on the cluster regardless. So if you need a controller to deploy some components these controllers should live in the platform stack as optional deployments.
 
 !!! note
 
@@ -262,4 +262,4 @@ __for tomorrow__
 1. Suspend the root FluxCD entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
 1. Delete the application HelmReleases/Kustomization objects - this is to trigger the finalisers to clear down external resources; EBS volumes, ALB etc.
 1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
-1. Destroy the kubernetes cluster using the infrastructure as code that deployed it initially.
+1. Destroy the Kubernetes cluster using the infrastructure as code that deployed it initially.
