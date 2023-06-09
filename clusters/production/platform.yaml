@@ -1,7 +1,7 @@
 # --8<-- [start:repo]
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: OCIRepository
+kind: GitRepository
 metadata:
   name: platform
   namespace: flux-system
@@ -9,9 +9,9 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: oci://registry.gitlab.com/nominet/cyber/architecture-team/fluxcd-demo
+  url: https://github.com/danielloader/fluxcd-demo.git
   ref:
-    semver: 0.0.x 
+    branch: main
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -23,7 +23,7 @@ spec:
   path: ./platform/services
   prune: true
   sourceRef:
-    kind: OCIRepository
+    kind: GitRepository
     name: platform
 # --8<-- [end:repo]
 ---
@@ -37,7 +37,7 @@ spec:
   path: ./platform/configs
   prune: true
   sourceRef:
-    kind: OCIRepository
+    kind: GitRepository
     name: platform
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -52,7 +52,7 @@ spec:
   path: ./platform/service-configs
   prune: true
   sourceRef:
-    kind: OCIRepository
+    kind: GitRepository
     name: platform
 
 
