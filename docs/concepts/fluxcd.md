@@ -8,7 +8,7 @@ The feedback loop described by the diagram above works as follows:
 
 1. You make a change to a YAML file(s) and commit your changes and push them to a git repository.
 1. The FluxCD source controller periodically pulls the repository from git.
-1. The FluxCD kustomize and helm controllers run dry run speculative applies looking for changes if the source commit hash changes.
+1. The FluxCD kustomize and helm controllers run dry applies looking for changes if the source commit hash changes.
 1. Any changes detected get reconciled with any sub-object in the cluster that the root controller controls.
 1. These reconciled states are now visible to the developer in their local IDE or kubernetes resource viewer _(k9s, lens etc)_.
 
