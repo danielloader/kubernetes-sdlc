@@ -133,9 +133,9 @@ Sandbox Types:
 
 Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
- <!-- --8<-- [start:create-sandbox] -->
-
 ![sandbox promotion](../images/change-promotion-platform-a.drawio.svg)
+
+ <!-- --8<-- [start:create-sandbox] -->
 
 The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
 

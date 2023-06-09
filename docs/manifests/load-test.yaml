@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-tester
+  namespace: app-a
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: wrk
+        image: elswork/wrk
+        args: ["-t", "8", "-c", "8", "-d", "100", "http://podinfo:9898"]
+      restartPolicy: Never

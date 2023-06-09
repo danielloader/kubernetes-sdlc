@@ -57,6 +57,8 @@ First task is to imagine the change control flow and quality gates that are betw
 - Packaging those changes into a versioned artifact for deployment on staging.
 - Promotion of this package into production.
 
+![sandbox promotion](../images/change-promotion-platform-a.drawio.svg)
+
 --8<-- "docs/implementation/change-promotion.md:create-sandbox"
 
 At this point you have a point in time snapshot clone of the Development environment - by virtue of creating a branch in the git repository. Now you're free to make changes to the cluster.
