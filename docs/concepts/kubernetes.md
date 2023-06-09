@@ -152,7 +152,7 @@ As far as you are concerned both operationally and as a developer these machines
 
 If you are not tied to needing to requirement to support multiple clouds and or on-premises deployments the cost benefit analysis for serverless workloads is often a case of scale and scale alone.
 
-Running serverless functions 24 hours a day, 7 days a week, will almost always be more expensive than running containers doing the same job. The trade-off is the operational complexity is reduced in exchange for money.
+Running serverless functions concurrently 24 hours a day, 7 days a week, will almost always be more expensive than running containers doing the same job. The trade-off is the operational complexity is reduced in exchange for costs.
 
 Serverless applications become their own tangled mess of interconnected parts in similar way kubernetes ones do, but there is a wealth of tooling out there to try and tame this problem.
 
