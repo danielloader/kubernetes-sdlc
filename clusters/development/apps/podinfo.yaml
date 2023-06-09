@@ -27,3 +27,13 @@ spec:
   targetNamespace: app-a
   install:
     createNamespace: true
+  values:
+    service:
+      enabled: true
+    resources:
+      limits:
+        cpu: 1m
+        memory: 16Mi
+      requests:
+        cpu: 1m
+        memory: 16Mi
