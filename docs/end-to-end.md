@@ -106,5 +106,11 @@ spec:
   values: {}
 ```
 
-FluxCD will take these three objects, apply them to the cluster and own the reconciliation loop of the objects. Additionally the upgrade procedure for most charts would be a version bump in the `.spec.chart.spec.version` value and any changes mandated in the `.spec.values` map.
+FluxCD will take these three objects, apply them to the cluster and own the reconciliation loop of the objects. 
+
+!!! tip
+
+    The upgrade procedure for most charts would be a version bump in the `.spec.chart.spec.version` value and any changes mandated in the `.spec.values` map.
+
+At this point it would be prudent to deploy an example to confirm the installation of the controller.
 
