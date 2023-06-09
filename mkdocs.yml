@@ -49,6 +49,7 @@ nav:
   - Git Repositories: implementation/repo-layout.md
   - Change Promotion: implementation/change-promotion.md
   - External Recources: implementation/external-resources.md
+- End to End: end-to-end.md
 - Deployment:
   - deployment/index.md
   - Create: deployment/create.md

@@ -133,11 +133,17 @@ Sandbox Types:
 
 Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
 
+ <!-- --8<-- [start:create-sandbox] -->
+
 ![sandbox promotion](../images/change-promotion-platform-a.drawio.svg)
 
 The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
 
-In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as development is tracking against main the first change you will need to make is to point the branch reference to track your new branch.
+In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as Development is tracking against `main` the first change you will need to make is to point the branch reference to track your new branch.
+
+!!! tip
+
+    It is good practice to use a ticket reference in your branch as a prefix followed by hyphenated summary of the branch function
 
 ```yaml title="clusters/development/platform.yaml" linenums="1"
 --8<-- "clusters/development/platform.yaml:branch"
@@ -158,6 +164,7 @@ Next step is provisioning your infrastructure as code template to create a worki
     ```
 
 1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
+ <!-- --8<-- [end:create-sandbox] -->
 1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
 1. Validate the changes are success and meet the requirements.
 1. Destroy the sandbox kubernetes cluster stack. See [deleting a sandbox](#deleting-a-sandbox) for details.
@@ -169,7 +176,7 @@ Next step is provisioning your infrastructure as code template to create a worki
     ```
 
     !!! warning
-    
+
         It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
 
 1. Raise pull request to merge this state into main.
