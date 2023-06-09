@@ -121,6 +121,7 @@ Long Lived Types:
 | Production          | Static artifact reference this cluster is a _known_ state at a glance - a fixed tag. (`1.2.3`) |
 | Staging             | Somewhat automatic patching this cluster should use a semver range filter and automatically deploy non breaking changes. (`1.2.x` or `1.x.x`) |
 | Deployment          | Tracks the `main` branch of the platform stack, with main being considered a rolling source of truth of a working sack. Will by its nature be usually ahead of tagged releases in staging and production, but not always. It is entirely possible that version `1.2.3` is deployed simultaneously to production, staging and development if changes haven't been made in a long time and the last commit in the main branch is also `1.2.3`. |
+| Canary              | Tracks `main` branch of the platform stack, optionally also `main` branches of the applications but additionally auto upgrades the control plane. |
 
 Sandbox Types:
 
@@ -129,73 +130,7 @@ Sandbox Types:
 | Performance Testing | You would track the same semver or tag version as the source environment/cluster when cloning an environment. Since you are not intending to merge changes back to the source cluster you do not need to branch from main. As such simply copying a cluster directory and bootstrapping it onto a new cluster is sufficient to get going. |
 | Platform Changes    | The primary purpose of a platform sandbox is to make a change. As such the change needs to follow the trunk based development lifecycle of doing some work in a branch, proposing some changes and opening a pull request to bring those changes back into the development cluster. |
 
-### Using Platform Sandboxes
-
-Since this read-write process is more complex than the read-only process in the performance testing scenario more details are required, and I have prepared an end to end flow for making these changes.
-
-![sandbox promotion](../images/change-promotion-platform-a.drawio.svg)
-
- <!-- --8<-- [start:create-sandbox] -->
-
-The first action with this diagram the first task is creating a branch in this repository to do work in, branched from `main`.
-
-In this branch you will want to clone the Development environment, as it is set to track against a git repository and branch. However as Development is tracking against `main` the first change you will need to make is to point the branch reference to track your new branch.
-
-!!! tip
-
-    It is good practice to use a ticket reference in your branch as a prefix followed by hyphenated summary of the branch function
-
-```yaml title="clusters/development/platform.yaml" linenums="1"
---8<-- "clusters/development/platform.yaml:branch"
-```
-
-Next step is provisioning your infrastructure as code template to create a working cluster. You will want to ensure the default context is set correctly, as checked via the `kubectl config get-contexts` output or explicitly add `--context` flags for `flux` and `kubectl` commands later.
-
-1. Deploy a new instance of the Kubernetes infrastructure of code - incrementing the control plane version or any other baseline modules you have breaking changes in:
-
-   - Kubernetes control plane version being incremented.
-   - Core EKS addons versions.
-  
-1. Since the above GitRepository object has a `.spec.secretRef` for a private repository, you will need to provide a secret to connect to the repository with the same name in the `flux-system` namespace. [Details](https://fluxcd.io/flux/components/source/gitrepositories/#secret-reference) can be found in the FluxCD documentation.
-1. Clone the development cluster to a sandbox:
-
-    ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' "clusters/development/" "clusters/sandbox-a"
-    ```
-
-1. Run FluxCD bootstrap on the new cluster to overwrite the values in the `flux-system` directory in the cluster directory, this is required to connect the reconciliation loop between source and cluster.
- <!-- --8<-- [end:create-sandbox] -->
-1. Make your changes to the cluster state via git commits to the `./clusters/sandbox-a` directory.
-1. Validate the changes are success and meet the requirements.
-1. Destroy the sandbox Kubernetes cluster stack. See [deleting a sandbox](#deleting-a-sandbox) for details.
-1. Copy the directory back to the source location in the current branch and delete the sandbox directory.
-
-    ```shell
-    rsync -av --exclude='*/gotk-sync.yaml' "clusters/sandbox-a/" "clusters/development"
-    rm -r "clusters/sandbox-a"
-    ```
-
-    !!! warning
-
-        It is **essential** you do not copy the `gotk-sync.yaml` directory back to the source or the root level `flux-system` kustomization will be sourcing files from the wrong directory.
-
-1. Raise pull request to merge this state into main.
-
-    ![sandbox promotion](../images/change-promotion-platform-b.drawio.svg)
-
-1. Monitor the change reconciliation and deployment on the deployment cluster.
-1. Adjust any infrastructure as code values for the development cluster to align it to the sandbox. _These must be non-destructive changes._
-1. Pushing those changes from Deployment to Staging is a case of tagging the main branch containing the platform components to create an OCI artifact, which gets automatically applied to staging if it is a minor or patch version increment or manually if there are breaking major changes by virtue of changing the OCIRepository object semver range.
-
-    ![sandbox promotion](../images/change-promotion-platform-c.drawio.svg)
-
-Finally pushing from staging to Production is a case of incrementing the tagged platform artifact in the OCIRepository object in Production.
-
-To summarise, each stage is slightly more gated than the last:
-
-- Development runs against a git branch (main) and this encourages the main branch of the repository to remain in a "deployable" state.
-- Staging has some autonomy to track incrementing artifact versions as and when tagging of the main branch takes place.
-- Production has strong versioning gates where in you have to manually increment the deployed version of the platform. It is a compromise state between ease of deployment and adding some checks and balances around automation.
+For a detailed example of utilising platform sandboxes, please refer to the [End to End](../end-to-end.md) guide.
 
 ## Application Sandbox
 
@@ -247,19 +182,3 @@ In addition to packaging your applications with Helm, you may find simpler stack
 
 Finally, mocks have a mixed reputation but if you can deploy a single application component in isolation with some mocks to test some functionality - if it makes sense to do so, you should.
 
-### Using Application Sandboxes
-
-__for tomorrow__
-
-## Deleting a Sandbox
-
-!!! note
-
-    As a nice to have it would be worth scripting the clean down procedure, but it is considerably easier than the existing deletion scripts - list all the kustomizations and helm charts with an annotation or label matching a value indicating they mutate state and then subsequently deleting them via kubectl._
-
-    It makes a lot of sense to start using annotations liberally on this, so you can differentiate between a helm chart of kustomization that provides a custom resource definition and subsequently a controller, and charts which use those. You **must** remove the custom objects before the controllers, or finalisers cannot be triggered and thus you will end up with dangling resources - some of which will cause your IAC to fail when trying to remove a VPC as those resources are likely still bound inside the VPC (Application load balancers etc). Experiments in this area will come later.
-
-1. Suspend the root FluxCD entrypoint to prevent self healing of children objects - `flux suspend ks flux-system`
-1. Delete the application HelmReleases/Kustomization objects - this is to trigger the finalisers to clear down external resources; EBS volumes, ALB etc.
-1. Return the cluster to its freshly bootstrapped state sans any external state. You should be left with a single `flux-system` kustomization and no HelmRelease objects.
-1. Destroy the Kubernetes cluster using the infrastructure as code that deployed it initially.
