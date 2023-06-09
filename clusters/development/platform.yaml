@@ -9,7 +9,7 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: https://gitlab.com/***REMOVED***/fluxcd-demo.git
+  url: https://github.com/danielloader/fluxcd-demo.git
   ref:
     branch: main
 # --8<-- [end:branch]
