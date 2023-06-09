@@ -148,11 +148,9 @@ This model falls apart when you have horizontally scaled workloads that change f
 
 #### Cloud Provider Driven Serverless Computing
 
-Getting it out the way first contrary to some you still have servers to run these workloads - the benefit is you do not need to care about them - so far in that you are powerless to fix them. As far as you are concerned both operationally and as a developer these machines might as well not exist and you only interact with the workloads via APIs.
+As far as you are concerned both operationally and as a developer these machines might as well not exist and you only interact with the workloads via APIs, which is quite compelling to avoid the complexity of kubernetes completely.
 
-Another compelling use case to avoid the complexity of kubernetes completely is to deploy a workload using entirely managed services.
-
-If you are not tied to needing to support multiple clouds, or on premises deployments, the cost benefit analysis for serverless workloads is often a case of scale and scale alone.
+If you are not tied to needing to requirement to support multiple clouds and or on-premises deployments the cost benefit analysis for serverless workloads is often a case of scale and scale alone.
 
 Running serverless functions 24 hours a day, 7 days a week, will almost always be more expensive than running containers doing the same job. The trade-off is the operational complexity is reduced in exchange for money.
 
