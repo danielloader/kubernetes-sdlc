@@ -1,6 +1,6 @@
 # Loose Coupling
 
-Contrary to the title, this section is actually about the benefits of strong coupling that fails in a way that you can debug and rectify in an incremental way rather than deleting the entire cluster and starting again.
+Contrary to the title, this section is actually about the benefits of strong coupling that fails in a way that you can debug and rectify incrementally rather than deleting the entire cluster and starting again.
 
 Coupling in the kubernetes sense is a two part subject:
 
