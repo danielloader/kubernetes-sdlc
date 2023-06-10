@@ -32,7 +32,7 @@ jobs:
 
     - name: Push OCI manifests with SHA tag
       run: |
-        digest_url = $(flux push artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) \
+        digest_url=$(flux push artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) \
         --ignore-paths='*,!/platform/**' \
         --path="." \
         --source="$(git config --get remote.origin.url)" \
