@@ -61,7 +61,8 @@ jobs:
     - name: Tag docker metadata-actions tags
       run: |
         while IFS= read -r line; do
+            TAG=${line#*:}
             flux tag artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) --tag latest
-            echo "'"$line"'"
+            echo "'"$TAG"'"
         done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
 
