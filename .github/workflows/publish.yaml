@@ -66,6 +66,6 @@ jobs:
     - name: test
       run: |
         TAG_LIST=${{ steps.meta.outputs.tags }}
-        while IFS= read -r line || [[ -n $TAG ]]; do
-        echo "... $TAG ..."
-        done < <(printf '%s' "$TAG_LIST")
+        while IFS= read -r line; do
+            echo "... $line ..."
+        done <<< "$TAG_LIsT"
