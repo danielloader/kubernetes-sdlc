@@ -3,8 +3,6 @@ name: Create and push cluster OCI
 
 on:
   push:
-    branches:
-      - "main"
     tags:
       - '*'
 
@@ -43,9 +41,7 @@ jobs:
         images: |
           manifests/platform
         tags: |
-          type=ref,event=branch
           type=semver,pattern={{version}}
-          type=sha
 
     - name: Push OCI manifests with SHA tag
       run: |
@@ -56,6 +52,7 @@ jobs:
         --revision="$(git rev-parse HEAD)" \
         --output json | \
         jq -r '. | .repository + "@" + .digest')
+        echo $digest_url
         cosign sign $digest_url -y
 
     - name: Tag docker metadata-actions tags
