@@ -1,0 +1,44 @@
+name: Create and push cluster OCI
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  create-and-push-oci:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Flux CLI
+      uses: fluxcd/flux2/action@main
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    # Use Cosign to sign and verify site content as OCI
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@main
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: github
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push OCI manifests with SHA tag
+      run: |
+        digest_url = $(flux push artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) \
+        --ignore-paths='*,!/platform/**' \
+        --path="." \
+        --source="$(git config --get remote.origin.url)" \
+        --revision="$(git rev-parse HEAD)" \
+        --output json | \
+        jq -r '. | .repository + "@" + .digest')
+        cosign sign $digest_url
+
+    - name: Tag with 'latest'
+      run: |
+        flux tag artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) --tag latest
