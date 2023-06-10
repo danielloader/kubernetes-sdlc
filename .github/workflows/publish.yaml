@@ -1,9 +1,15 @@
 name: Create and push cluster OCI
 
+
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - 'master'
 
 jobs:
   create-and-push-oci:
@@ -31,18 +37,35 @@ jobs:
         registry: ghcr.io
         username: github
         password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          manifests/platform
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+          type=sha
 
-    - name: Push OCI manifests with SHA tag
-      run: |
-        digest_url=$(flux push artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) \
-        --ignore-paths='*,!/platform/**' \
-        --path="." \
-        --source="$(git config --get remote.origin.url)" \
-        --revision="$(git rev-parse HEAD)" \
-        --output json | \
-        jq -r '. | .repository + "@" + .digest')
-        cosign sign $digest_url -y
+    # - name: Push OCI manifests with SHA tag
+    #   run: |
+    #     digest_url=$(flux push artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) \
+    #     --ignore-paths='*,!/platform/**' \
+    #     --path="." \
+    #     --source="$(git config --get remote.origin.url)" \
+    #     --revision="$(git rev-parse HEAD)" \
+    #     --output json | \
+    #     jq -r '. | .repository + "@" + .digest')
+    #     cosign sign $digest_url -y
 
-    - name: Tag with 'latest'
+    # - name: Tag with 'latest'
+    #   run: |
+    #     flux tag artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) --tag latest
+    - name: test
       run: |
-        flux tag artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) --tag latest
+        TAG_LIST=${{ steps.meta.outputs.tags }}
+        while IFS= read -r TAG || [[ -n $TAG ]]; do
+        echo "... $TAG ..."
+        done < <(printf '%s' "$TAG_LIST")
