@@ -4,12 +4,9 @@ name: Create and push cluster OCI
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     tags:
       - '*'
-  pull_request:
-    branches:
-      - 'master'
 
 jobs:
   create-and-push-oci:
@@ -65,7 +62,6 @@ jobs:
     #     flux tag artifact oci://ghcr.io/danielloader/manifests/platform:$(git rev-parse --short HEAD) --tag latest
     - name: test
       run: |
-        TAG_LIST=${{ steps.meta.outputs.tags }}
         while IFS= read -r line; do
             echo "... $line ..."
-        done <<< "$TAG_LIST"
+        done <<< "$DOCKER_METADATA_OUTPUT_TAGS"
