@@ -109,7 +109,7 @@ Both flows are documented in the above link to the FluxCD documentation so revie
 
     It probably doesn't make sense to include alerts on your sandbox environments, as the signal to noise ratio will be high and people will stop paying attention to chat channels where notifications are being sent to. Additionally it would make some sense to split the chat channels into "Development", "Staging" and "Production" channels so certain people can pay attention to certain environments.
 
-### Summary
+## Summary
 
 - In important environments set strict auto remediation configuration to retry upgrades and/or automatically rolling back.
 - Sandboxes should be perfectly sufficient to be isolated and monitored by the person making the changes.
