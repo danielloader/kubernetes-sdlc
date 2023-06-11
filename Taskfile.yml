@@ -25,9 +25,9 @@ tasks:
     - |
       if [ "{{.OCI_PLATFORM}}" == "true" ]
       then 
-        kubectl create secret docker-registry platform-repository -n flux-system --docker-server=registry.gitlab.com --docker-username="{{.GITLAB_USERNAME}}" --docker-password="{{.GITLAB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
+        kubectl create secret docker-registry platform-repository -n flux-system --docker-server=ghcr.io --docker-username=danielloader --docker-password="{{.GITHUB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
       else
-        kubectl create secret generic platform-repository -n flux-system --from-literal=username=git --from-literal=password="{{.GITLAB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
+        kubectl create secret generic platform-repository -n flux-system --from-literal=username=danielloader --from-literal=password="{{.GITHUB_TOKEN}}" --context kind-{{.CLUSTER_NAME}}
       fi
     vars:
       CLUSTER_NAME:
