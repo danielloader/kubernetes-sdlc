@@ -6,6 +6,8 @@
 
 This project serves as a proof of concept implementation and associated documentation around utilising kubernetes to enable a modern software development lifecycle - not just for software development but platform engineering.
 
+Moreover this is living documentation - with the intention to update it with additional caveats and process improvements as the flow hits real world problems.
+
 Topics:
 
 - High level concepts about the components and moving parts in play.
