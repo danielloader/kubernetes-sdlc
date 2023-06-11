@@ -9,7 +9,7 @@ spec:
   secretRef:
     name: platform-repository
   interval: 1m0s
-  url: oci://ghcr.io/danielloader/fluxcd-demo/platform
+  url: oci://ghcr.io/danielloader/kubernetes-sdlc/platform
   ref:
     semver: 0.0.x 
 ---
