@@ -1,11 +1,11 @@
-site_name: FluxCD Demo
-site_url: https://danielloader.github.io/fluxcd-demo/
-repo_url: https://github.com/danielloader/fluxcd-demo
-repo_name: fluxcd-demo
+site_name: Kubernetes SDLC
+site_url: https://danielloader.github.io/kubernetes-sdlc/
+repo_url: https://github.com/danielloader/kubernetes-sdlc
+repo_name: kubernetes-sdlc
 edit_uri: edit/main/docs/
 markdown_extensions:
   - pymdownx.snippets:
-      base_path: "."
+      base_path: ["."]
       check_paths: true
   - tables
   - attr_list
@@ -46,6 +46,7 @@ nav:
   - Git Repositories: implementation/repo-layout.md
   - Change Promotion: implementation/change-promotion.md
   - External Recources: implementation/external-resources.md
+  - Failure States: implementation/failure-states.md
 - End to End: end-to-end.md
 - Deployment:
   - deployment/index.md

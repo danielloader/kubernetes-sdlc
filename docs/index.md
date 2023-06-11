@@ -1,13 +1,7 @@
-# FluxCD - Kubernetes and Change Control
+# Kubernetes - Software Development Lifecycle
 
-This repository exists to store a working proof of concept and notes around how to handle change management as a platform team around kubernetes clusters.
+--8<-- "README.md:intro"
 
-Topics:
-
-- High level concepts about the components and moving parts in play.
-- Composition over inheritance in context with infrastructure.
-- External cloud resources and where they fit into the kubernetes ecosystem.
-- End to End change promotion scenarios.
-- A working example using local kubernetes environments. See [Deployment](deployment) section for details.
+At a high level this is the resulting output and details of the steps to get there, the rationale for the effort incurred to deliver this design and the business outcomes will be found dispersed throughout the documentation.
 
 ![abstract diagram](images/abstract-diagram.drawio.svg)
