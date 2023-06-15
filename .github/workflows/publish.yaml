@@ -9,6 +9,7 @@ on:
 jobs:
   create-and-push-oci:
     runs-on: self-hosted
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
